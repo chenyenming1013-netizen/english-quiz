@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>英文小測驗｜be 動詞・助動詞・形容詞・現在進行式</title>
+<style>
+  :root{
+    --paper:#fbf7ef; --ink:#2f2921; --line:#ddd0ba;
+    --gold:#e0a83c; --green:#3f9a63; --red:#d9534f; --blue:#4a7fc1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:14px; background:#26221c; color:var(--ink);
+    font-family:"Noto Sans TC","Microsoft JhengHei","Segoe UI",sans-serif;
+  }
+  .wrap{max-width:640px; margin:0 auto; background:var(--paper);
+        border-radius:18px; padding:20px 20px 26px; box-shadow:0 16px 36px rgba(0,0,0,.45);}
+  h1{margin:0 0 2px; text-align:center; font-size:clamp(19px,4.4vw,25px); font-weight:800; letter-spacing:1px;}
+  .sub{text-align:center; font-size:13px; color:#8d8271; margin-bottom:16px;}
+
+  .meta{display:flex; justify-content:space-between; align-items:center; font-size:14px; color:#6f6555; margin-bottom:6px;}
+  .bar{height:9px; background:#eae0cd; border-radius:99px; overflow:hidden;}
+  .bar>i{display:block; height:100%; width:0; background:var(--gold); transition:width .25s;}
+
+  .card{margin-top:18px;}
+  .qno{font-size:13px; color:#8d8271; letter-spacing:1px;}
+  .qtext{
+    font-size:clamp(20px,4.6vw,27px); line-height:1.65; margin:8px 0 18px;
+    font-family:Georgia,"Times New Roman",serif; font-weight:600;
+  }
+  .blank{color:var(--blue); letter-spacing:2px;}
+
+  .opts{display:flex; flex-direction:column; gap:10px;}
+  button.opt{
+    font-family:inherit; text-align:left; cursor:pointer; width:100%;
+    background:#fff; border:2.5px solid var(--line); border-radius:12px;
+    padding:13px 15px; font-size:clamp(16px,3.4vw,20px); color:var(--ink);
+    display:flex; align-items:center; gap:12px; transition:.12s;
+  }
+  button.opt .k{
+    flex:0 0 30px; height:30px; border-radius:50%; background:#f0e7d6;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px;
+  }
+  button.opt:hover:not(:disabled){border-color:var(--gold); transform:translateX(3px);}
+  button.opt:disabled{cursor:default;}
+  button.opt.ok{border-color:var(--green); background:#eaf6ee;}
+  button.opt.ok .k{background:var(--green); color:#fff;}
+  button.opt.no{border-color:var(--red); background:#fdeeed; opacity:.75;}
+  button.opt.no .k{background:var(--red); color:#fff;}
+
+  .hint{margin-top:14px; padding:13px 15px; border-radius:12px; display:none; font-size:15px; line-height:1.8;}
+  .hint.show{display:block;}
+  .hint.good{background:#eaf6ee; border:2.5px solid var(--green);}
+  .hint.bad{background:#fff5e2; border:2.5px solid var(--gold);}
+  .hint b{color:var(--blue);}
+
+  .row{display:flex; gap:10px; justify-content:center; margin-top:18px; flex-wrap:wrap;}
+  button.act{
+    font-family:inherit; font-weight:700; font-size:16px; cursor:pointer;
+    padding:11px 26px; border-radius:99px; border:2.5px solid var(--ink);
+    background:var(--gold); color:#2f2921; transition:.12s;
+  }
+  button.act:hover{transform:translateY(-2px); background:#ecbb5c;}
+  button.act.ghost{background:#fff;}
+  .hide{display:none !important;}
+
+  .result{text-align:center;}
+  .score{font-size:clamp(38px,10vw,62px); font-weight:900; line-height:1.1; margin:10px 0 2px;}
+  .score small{font-size:.42em; color:#8d8271; font-weight:700;}
+  .comment{font-size:16px; color:#6f6555; margin-bottom:14px;}
+  .grid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:16px 0;}
+  .cell{
+    aspect-ratio:1; border-radius:10px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; font-weight:800; font-size:15px;
+    border:2.5px solid var(--line); background:#fff;
+  }
+  .cell.ok{border-color:var(--green); background:#eaf6ee; color:var(--green);}
+  .cell.no{border-color:var(--red); background:#fdeeed; color:var(--red);}
+  .cell span{font-size:11px; font-weight:600; color:#8d8271;}
+
+  .banner{
+    background:#f3ecdd; border:2.5px dashed var(--gold); border-radius:12px;
+    padding:12px 14px; font-size:15px; line-height:1.7; margin-bottom:4px;
+  }
+  .final-list{text-align:left; font-size:15px; line-height:2;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📘 英文小測驗</h1>
+  <div class="sub">be 動詞・助動詞・形容詞・現在進行式</div>
+
+  <!-- 開始畫面 -->
+  <div id="startBox">
+    <div class="banner">
+      全部 <b>30 題</b>，分成 <b>3 回合</b>，每回合 10 題。<br>
+      每題 10 分，一回合滿分 100 分。<br>
+      作答完會公布分數，答錯的題目可以再訂正一次。
+    </div>
+    <div class="row"><button class="act" id="startBtn">開始測驗 ▶</button></div>
+  </div>
+
+  <!-- 作答 -->
+  <div id="quizBox" class="hide">
+    <div class="meta">
+      <span id="roundLabel"></span>
+      <span id="countLabel"></span>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="card">
+      <div class="qno" id="qno"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <div class="hint" id="hint"></div>
+      <div class="row"><button class="act hide" id="nextBtn">下一題 ▶</button></div>
+    </div>
+  </div>
+
+  <!-- 成績 -->
+  <div id="resultBox" class="hide result">
+    <div id="roundDone" style="font-size:18px;font-weight:800;"></div>
+    <div class="score" id="scoreText"></div>
+    <div class="comment" id="comment"></div>
+    <div class="grid" id="grid"></div>
+    <div class="row" id="resultRow"></div>
+  </div>
+
+  <!-- 全部完成 -->
+  <div id="finalBox" class="hide result">
+    <div style="font-size:20px;font-weight:900;">🎉 全部完成！</div>
+    <div class="score" id="finalScore"></div>
+    <div class="final-list" id="finalList"></div>
+    <div class="row"><button class="act" id="restartBtn">🔁 再測一次</button></div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  // ── 第一回合：be 動詞 + 助動詞 ──
+  {q:"I ___ a student.", o:["am","is","are"], a:0, e:"主詞 I 一定配 am。"},
+  {q:"She ___ my sister.", o:["am","is","are"], a:1, e:"She 是第三人稱單數，配 is。"},
+  {q:"The apples ___ red.", o:["am","is","are"], a:2, e:"apples 是複數，配 are。"},
+  {q:"We ___ happy today.", o:["am","is","are"], a:2, e:"We 是複數，配 are。"},
+  {q:"The cat ___ on the box.", o:["am","is","are"], a:1, e:"The cat 是單數，配 is。"},
+  {q:"You ___ my friend.", o:["am","is","are"], a:2, e:"You 不管單複數都配 are。"},
+  {q:"Tom and I ___ in the park.", o:["am","is","are"], a:2, e:"Tom and I 是兩個人，配 are。"},
+  {q:"It ___ a big elephant.", o:["am","is","are"], a:1, e:"It 是單數，配 is。"},
+  {q:"___ you like bananas?", o:["Do","Does","Is"], a:0, e:"主詞 you 的疑問句用 Do 開頭。"},
+  {q:"___ he play basketball?", o:["Do","Does","Are"], a:1, e:"he 是第三人稱單數，疑問句用 Does。"},
+
+  // ── 第二回合：助動詞 + 形容詞 ──
+  {q:"I ___ swim very well.", o:["can","cans","to can"], a:0, e:"can 是助動詞，不加 s，後面接原形動詞。"},
+  {q:"She ___ got a new bike.", o:["have","has","is"], a:1, e:"She 是第三人稱單數，用 has。"},
+  {q:"They ___ not like carrots.", o:["do","does","is"], a:0, e:"They 是複數，否定用 do not。"},
+  {q:"___ the bus come at eight?", o:["Do","Does","Is"], a:1, e:"The bus 是單數，疑問句用 Does。"},
+  {q:"We ___ go to school on Sunday.", o:["don't","doesn't","isn't"], a:0, e:"We 是複數，否定用 don't。"},
+  {q:"Ice is ___.", o:["hot","cold","tall"], a:1, e:"冰是冷的，cold 是「冷」。"},
+  {q:"An elephant is a ___ animal.", o:["big","small","short"], a:0, e:"大象很大，big 是「大的」。"},
+  {q:"The lemon tastes ___.", o:["sweet","sour","salty"], a:1, e:"檸檬是酸的，sour 是「酸」。"},
+  {q:"This car runs very ___.", o:["slow","fast","old"], a:1, e:"車跑得很快，fast 是「快」。"},
+  {q:"My bag is too ___. I can't carry it.", o:["light","heavy","new"], a:1, e:"拿不動是因為太重，heavy 是「重」。"},
+
+  // ── 第三回合：形容詞 + 現在進行式 ──
+  {q:"A giraffe has a ___ neck.", o:["long","short","small"], a:0, e:"長頸鹿脖子很長，long 是「長」。"},
+  {q:"The soup is too ___. Don't drink it now.", o:["cool","hot","cold"], a:1, e:"現在不能喝是因為太燙，hot 是「熱、燙」。"},
+  {q:"Look! The dog ___ running.", o:["is","are","am"], a:0, e:"The dog 是單數，用 is + V-ing。"},
+  {q:"I ___ eating an apple now.", o:["is","am","are"], a:1, e:"主詞 I 配 am，am + V-ing。"},
+  {q:"They ___ playing in the park.", o:["is","am","are"], a:2, e:"They 是複數，用 are + V-ing。"},
+  {q:"She is ___ a book.", o:["read","reads","reading"], a:2, e:"be 動詞後面要接 V-ing：read → reading。"},
+  {q:"We are ___ to school.", o:["walk","walking","walks"], a:1, e:"are 後面接 V-ing：walk → walking。"},
+  {q:"He is ___ TV now.", o:["watch","watches","watching"], a:2, e:"is 後面接 V-ing：watch → watching。"},
+  {q:"The birds ___ singing.", o:["is","are","am"], a:1, e:"The birds 是複數，用 are + V-ing。"},
+  {q:"My mom is ___ dinner.", o:["cook","cooking","cookes"], a:1, e:"is 後面接 V-ing：cook → cooking。"}
+];
+
+const ROUND_NAMES = ["第一回合：be 動詞・助動詞", "第二回合：助動詞・形容詞", "第三回合：形容詞・現在進行式"];
+const KEYS = ["A","B","C"];
+const $ = id => document.getElementById(id);
+
+let round = 0;          // 0,1,2
+let pos = 0;            // 該回合第幾題
+let answers = [];       // 該回合作答結果 index
+let mode = "quiz";      // quiz | fix
+let fixQueue = [];      // 訂正佇列
+let fixPos = 0;
+let roundScores = [null, null, null];
+
+function roundQuestions(r){ return QUESTIONS.slice(r*10, r*10+10); }
+
+function show(box){
+  ["startBox","quizBox","resultBox","finalBox"].forEach(b =>
+    $(b).classList.toggle("hide", b !== box));
+}
+
+function renderQuestion(){
+  const qs = roundQuestions(round);
+  const idx = mode === "quiz" ? pos : fixQueue[fixPos];
+  const item = qs[idx];
+  const globalNo = round*10 + idx + 1;
+
+  $("roundLabel").textContent = ROUND_NAMES[round] + (mode === "fix" ? "（訂正）" : "");
+  $("countLabel").textContent = mode === "quiz"
+    ? (pos+1) + " / 10"
+    : "訂正 " + (fixPos+1) + " / " + fixQueue.length;
+  const p = mode === "quiz" ? (pos/10) : (fixPos/fixQueue.length);
+  $("barFill").style.width = (p*100) + "%";
+
+  $("qno").textContent = "第 " + globalNo + " 題" + (mode === "fix" ? "（再試一次）" : "");
+  $("qtext").innerHTML = item.q.replace("___", '<span class="blank">___</span>');
+
+  const box = $("opts");
+  box.innerHTML = "";
+  item.o.forEach((txt, k) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = '<span class="k">' + KEYS[k] + '</span><span>' + txt + '</span>';
+    b.onclick = () => pick(k, idx, item, b);
+    box.appendChild(b);
+  });
+
+  $("hint").className = "hint";
+  $("hint").innerHTML = "";
+  $("nextBtn").classList.add("hide");
+}
+
+function pick(k, idx, item, btn){
+  if (mode === "quiz"){
+    // 第一次作答：不給提示，直接記錄後下一題
+    answers[idx] = k;
+    [...$("opts").children].forEach(b => b.disabled = true);
+    btn.style.borderColor = "#4a7fc1";
+    setTimeout(() => {
+      pos++;
+      if (pos >= 10) finishRound(); else renderQuestion();
+    }, 220);
+  } else {
+    // 訂正模式：選錯馬上出現正確答案提示
+    const opts = [...$("opts").children];
+    if (k === item.a){
+      btn.classList.add("ok");
+      opts.forEach(b => b.disabled = true);
+      $("hint").className = "hint show good";
+      $("hint").innerHTML = "✅ 答對了！<br>" + item.e;
+      $("nextBtn").classList.remove("hide");
+      $("nextBtn").textContent = (fixPos+1 >= fixQueue.length) ? "完成訂正 ▶" : "下一題 ▶";
+    } else {
+      btn.classList.add("no");
+      btn.disabled = true;
+      opts[item.a].classList.add("ok");
+      opts.forEach(b => b.disabled = true);
+      $("hint").className = "hint show bad";
+      $("hint").innerHTML = "❌ 再看一次！正確答案是 <b>(" + KEYS[item.a] + ") " + item.o[item.a] + "</b><br>" + item.e;
+      $("nextBtn").classList.remove("hide");
+      $("nextBtn").textContent = (fixPos+1 >= fixQueue.length) ? "完成訂正 ▶" : "下一題 ▶";
+    }
+  }
+}
+
+function finishRound(){
+  const qs = roundQuestions(round);
+  let correct = 0;
+  qs.forEach((item, i) => { if (answers[i] === item.a) correct++; });
+  const score = correct * 10;
+  roundScores[round] = score;
+
+  $("roundDone").textContent = ROUND_NAMES[round] + " 完成";
+  $("scoreText").innerHTML = score + '<small> / 100 分</small>';
+  const comments = ["再看一次規則，你一定會進步！","有幾題還不熟，訂正一下就懂了。",
+                    "不錯喔！大部分都答對了。","很棒！只差一點點。","滿分！完全正確 🎉"];
+  const ci = correct <= 3 ? 0 : correct <= 5 ? 1 : correct <= 7 ? 2 : correct <= 9 ? 3 : 4;
+  $("comment").textContent = comments[ci];
+
+  const grid = $("grid");
+  grid.innerHTML = "";
+  qs.forEach((item, i) => {
+    const ok = answers[i] === item.a;
+    const d = document.createElement("div");
+    d.className = "cell " + (ok ? "ok" : "no");
+    d.innerHTML = (ok ? "✓" : "✗") + '<span>第' + (round*10+i+1) + '題</span>';
+    grid.appendChild(d);
+  });
+
+  fixQueue = [];
+  qs.forEach((item, i) => { if (answers[i] !== item.a) fixQueue.push(i); });
+
+  const row = $("resultRow");
+  row.innerHTML = "";
+  if (fixQueue.length){
+    const b = document.createElement("button");
+    b.className = "act";
+    b.textContent = "✏️ 訂正錯的 " + fixQueue.length + " 題";
+    b.onclick = startFix;
+    row.appendChild(b);
+  } else {
+    const b = document.createElement("button");
+    b.className = "act";
+    b.textContent = round < 2 ? "進入下一回合 ▶" : "看總成績 ▶";
+    b.onclick = nextRound;
+    row.appendChild(b);
+  }
+  show("resultBox");
+}
+
+function startFix(){
+  mode = "fix"; fixPos = 0;
+  show("quizBox");
+  renderQuestion();
+}
+
+$("nextBtn").onclick = () => {
+  fixPos++;
+  if (fixPos >= fixQueue.length){
+    // 訂正結束
+    mode = "quiz";
+    const row = $("resultRow");
+    row.innerHTML = "";
+    const b = document.createElement("button");
+    b.className = "act";
+    b.textContent = round < 2 ? "進入下一回合 ▶" : "看總成績 ▶";
+    b.onclick = nextRound;
+    row.appendChild(b);
+    $("comment").textContent = "訂正完成！記得剛剛的規則喔。";
+    show("resultBox");
+  } else {
+    renderQuestion();
+  }
+};
+
+function nextRound(){
+  round++;
+  if (round > 2){ showFinal(); return; }
+  pos = 0; answers = []; mode = "quiz";
+  show("quizBox");
+  renderQuestion();
+}
+
+function showFinal(){
+  const total = roundScores.reduce((a,b) => a+b, 0);
+  $("finalScore").innerHTML = Math.round(total/3) + '<small> 分（平均）</small>';
+  $("finalList").innerHTML = ROUND_NAMES.map((n,i) =>
+      "・" + n + "：<b>" + roundScores[i] + " 分</b>").join("<br>");
+  show("finalBox");
+}
+
+$("startBtn").onclick = () => {
+  round = 0; pos = 0; answers = []; mode = "quiz"; roundScores = [null,null,null];
+  show("quizBox"); renderQuestion();
+};
+$("restartBtn").onclick = () => $("startBtn").click();
+</script>
+</body>
+</html>

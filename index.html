@@ -164,6 +164,7 @@
       ・YLE 三個級別依照劍橋官方規定的題數設計，做完會換算<b>盾牌</b>（最多 5 個）<br>
       ・題目全部原創，僅模仿官方題型，未使用官方考古題<br>
       ・點 <b>🔊</b> 可以聽英文發音（題目、短文、選項、正確答案）<br>
+      ・YLE 可以單獨練<b>閱讀寫作</b>或<b>聽力</b>，做完整份才換算盾牌<br>
       ・YLE <b>聽力題是真的用聽的</b>：對話文字先蓋住，自動播 1 次、可再聽 1 次，
         聽完才會出現「看文字」;兩個說話的人用不同聲音
     </div>
@@ -224,6 +225,8 @@ const BLOCK = 10;
 
 /* ================= 發音（Web Speech API，瀏覽器內建，不需音檔） ================= */
 const SPK = { ok:("speechSynthesis" in window), on:true, auto:false, vA:null, vB:null, primed:false };
+/* 語速（1 = 正常，數字越小越慢）。想再調快慢改這裡就好 */
+const RATE = { q:0.68, dlg:0.76, opt:0.7, scene:0.76, ansSent:0.66, ansWord:0.58 };
 const FEM = /^(girl|woman|lady|shop lady|mum|mom|mother|grandma|aunt|miss|mrs|ms|anna|kim|kate|mary|sally|helen|julia|sue|jane|sophie|emma|lucy|vicky|sarah|katy|teacher)$/i;
 const MAL = /^(boy|man|dad|father|grandpa|uncle|mr|tom|ben|sam|jack|jim|peter|paul|robert|william|michael|daniel|fred|bill)$/i;
 
@@ -271,7 +274,7 @@ function dialogLines(html){
     let voice = SPK.vA, pitch = 1.06;
     if (FEM.test(who)) { voice = SPK.vA; pitch = 1.22; }
     else if (MAL.test(who)) { voice = SPK.vB; pitch = 0.78; }
-    return { t: txt, voice: voice, pitch: pitch, rate: 0.85 };
+    return { t: txt, voice: voice, pitch: pitch, rate: RATE.dlg };
   }).filter(function(x){ return hasEN(x.t); });
 }
 
@@ -280,7 +283,7 @@ function questionSay(it){
   const out = [];
   if (it.dialog) dialogLines(it.dialog).forEach(function(l){ out.push(l); });
   const q = cleanEN(it.q);
-  if (hasEN(q)) out.push({ t:q, pitch:1.06, rate:(it.dialog ? 0.85 : 0.8) });
+  if (hasEN(q)) out.push({ t:q, pitch:1.06, rate:RATE.q });
   return out;
 }
 /* 短文／故事：逐句唸（切句避免瀏覽器唸太長被截斷） */
@@ -294,7 +297,7 @@ function sceneSay(it){
     if (!hasEN(txt)) return;
     (txt.match(/[^.!?]+[.!?]*/g) || [txt]).forEach(function(sent){
       const t = sent.trim();
-      if (hasEN(t)) out.push({ t:t, pitch:1.06, rate:0.85 });
+      if (hasEN(t)) out.push({ t:t, pitch:1.06, rate:RATE.scene });
     });
   });
   return out;
@@ -304,7 +307,7 @@ function optionSay(it){
   const out = [];
   it.o.forEach(function(o, i){
     const c = cleanEN(o);
-    if (hasEN(c)) out.push({ t: KEYS[i] + ". " + c, pitch:1.06, rate:0.82 });
+    if (hasEN(c)) out.push({ t: KEYS[i] + ". " + c, pitch:1.06, rate:RATE.opt });
   });
   return out;
 }
@@ -312,19 +315,19 @@ function optionSay(it){
 function answerSay(it){
   if (it.type === "input"){
     const w = cleanEN(it.ans[0]);
-    return hasEN(w) ? [{ t:w, pitch:1.06, rate:0.7 }] : [];
+    return hasEN(w) ? [{ t:w, pitch:1.06, rate:RATE.ansWord }] : [];
   }
   if (it.type === "tf" || it.type === "yn"){
     const s = cleanEN(it.q);
-    return hasEN(s) ? [{ t:s, pitch:1.06, rate:0.78 }] : [];
+    return hasEN(s) ? [{ t:s, pitch:1.06, rate:RATE.ansSent }] : [];
   }
   const raw = String(it.q || ""), pick = it.o[it.a];
   if (/_{2,}/.test(raw)){
     const full = cleanEN(raw.replace(/_{2,}/, " " + pick + " "));
-    if (hasEN(full)) return [{ t:full, pitch:1.06, rate:0.78 }];
+    if (hasEN(full)) return [{ t:full, pitch:1.06, rate:RATE.ansSent }];
   }
   const c = cleanEN(pick);
-  return hasEN(c) ? [{ t:c, pitch:1.06, rate:0.7 }] : [];
+  return hasEN(c) ? [{ t:c, pitch:1.06, rate:RATE.ansWord }] : [];
 }
 
 function say(list, onStart, onEnd){
@@ -487,7 +490,45 @@ function openLevel(i){
   L = LEVELS[i];
   $("pageTitle").textContent = L.icon + " " + L.title;
   $("pageSub").textContent = L.meta;
-  if (L.parts) buildPartMenu(); else startRange(L.items, null);
+  if (L.parts) buildPartMenu();
+  else if (L.shield) buildSectionMenu();
+  else startRange(L.items, null);
+}
+
+/* 有沒有自己的選單（Basic 是單元選單，YLE 是兩個部分） */
+function hasMenu(){ return !!(L && (L.parts || L.shield)); }
+function showMenu(){
+  if (L && L.parts) buildPartMenu();
+  else if (L && L.shield) buildSectionMenu();
+  else goHome();
+}
+function isListen(it){ return /Listening/i.test(it.part || ""); }
+
+/* YLE：閱讀寫作 / 聽力 */
+function buildSectionMenu(){
+  stopSpeak();
+  const box = $("partList"); box.innerHTML = "";
+  const secs = [
+    { nm:"閱讀寫作 Reading & Writing", icon:"📖", d:"看圖、讀短文、選字、拼字",
+      f:function(it){ return !isListen(it); } },
+    { nm:"聽力 Listening", icon:"🎧", d:"對話文字會蓋住，用聽的作答",
+      f:function(it){ return isListen(it); } }
+  ];
+  secs.forEach(function(sec){
+    const list = L.items.filter(sec.f);
+    if (!list.length) return;
+    const done = (partDone[L.id] || {})[sec.nm];
+    const b = document.createElement("button");
+    b.className = "prt" + (done !== undefined ? " done" : "");
+    b.innerHTML = '<span class="n">'+sec.icon+'</span><span><span class="t">'+sec.nm+'</span>'
+                + '<span class="s">'+list.length+' 題　'+sec.d+'</span></span>'
+                + (done !== undefined ? '<span class="sc">'+done+' 分</span>' : '');
+    b.onclick = function(){ startRange(list, sec.nm); };
+    box.appendChild(b);
+  });
+  $("allBtn").textContent = "🏅 完整測驗 "+L.items.length+" 題（做完換算盾牌）";
+  $("pageSub").textContent = "選一個部分練習，或做完整份測驗";
+  show("partBox");
 }
 
 /* 取出所有單元名稱（依原順序） */
@@ -512,7 +553,8 @@ function buildPartMenu(){
     b.onclick = () => startRange(L.items.filter(it => it.part === nm), nm);
     box.appendChild(b);
   });
-  $("pageSub").textContent = "選一個單元開始，或從頭做完 100 題";
+  $("allBtn").textContent = "📖 全部 "+L.items.length+" 題依序做";
+  $("pageSub").textContent = "選一個單元開始，或從頭做完 "+L.items.length+" 題";
   show("partBox");
 }
 
@@ -532,7 +574,7 @@ function startBlock(){
 function blk(){ return blocks[bi]; }
 function blkItems(){ return active.slice(blk().from, blk().to); }
 function curIdx(){ return mode === "quiz" ? pos : fixQueue[fixPos]; }
-function backTarget(){ if (L && L.parts) buildPartMenu(); else goHome(); }
+function backTarget(){ if (hasMenu()) showMenu(); else goHome(); }
 
 /* ---------- 出題 ---------- */
 function render(){
@@ -703,19 +745,19 @@ function showFinal(){
     if (old === undefined || pct > old) partDone[L.id][partName] = pct;
   }
   $("finalScore").innerHTML = pct + '<small> 分　（' + tr + ' / ' + tt + ' 題）</small>';
-  if (L.shield){
+  if (L.shield && !partName){
     const sh = pct<40?1:pct<55?2:pct<70?3:pct<85?4:5;
     $("finalShields").textContent = "🛡️".repeat(sh) + "▫️".repeat(5-sh);
   } else $("finalShields").textContent = "";
   $("finalList").innerHTML = blocks.length > 1
       ? blockScores.map((s,i)=>"・第 " + (i+1) + " 組：<b>" + (s.right*10) + " 分</b>（" + s.right + "/" + s.total + "）").join("<br>")
       : "";
-  $("backPartBtn").classList.toggle("hide", !(L && L.parts));
+  $("backPartBtn").classList.toggle("hide", !hasMenu());
   show("finalBox");
 }
 
 $("againBtn").onclick = () => startRange(active, partName);
-$("backPartBtn").onclick = buildPartMenu;
+$("backPartBtn").onclick = showMenu;
 $("homeBtn").onclick = goHome;
 $("quitBtn").onclick = backTarget;
 $("quitBtn2").onclick = backTarget;

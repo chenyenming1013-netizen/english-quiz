@@ -126,12 +126,28 @@
   .backrow{text-align:center;margin-top:14px;}
   .backrow button{background:none;border:none;color:var(--soft);font-family:inherit;
                   font-size:13px;cursor:pointer;text-decoration:underline;}
+
+  /* 發音 */
+  .spk{display:inline-flex;align-items:center;justify-content:center;
+       border:2.5px solid var(--line);background:#fff;border-radius:999px;
+       font-family:inherit;font-size:14px;font-weight:700;color:var(--ink);
+       cursor:pointer;padding:7px 14px;line-height:1.15;transition:.14s;}
+  .spk:hover{border-color:var(--blue);}
+  .spk:active{transform:scale(.96);}
+  .spk.on{border-color:var(--blue);background:var(--sky);}
+  .spk.mini{padding:5px 11px;font-size:13px;font-weight:600;}
+  .spk.playing{border-color:var(--gold);background:#fdf3e0;}
+  .speakrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 2px;}
+  .audiobar{display:flex;gap:8px;justify-content:center;align-items:center;
+            flex-wrap:wrap;margin:-8px 0 16px;}
+  .audiobar .lab{font-size:12px;color:var(--soft);}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1 id="pageTitle">📚 英文能力檢定</h1>
   <div class="sub" id="pageSub">選一個程度開始練習</div>
+  <div class="audiobar" id="audioBar"></div>
 
   <!-- 首頁 -->
   <div id="homeBox">
@@ -141,7 +157,8 @@
       ・每 <b>10 題</b>結算一次分數，每題 10 分<br>
       ・答錯的題目可以立刻<b>訂正</b>，訂正時選錯會馬上看到正確答案和說明<br>
       ・YLE 三個級別依照劍橋官方規定的題數設計，做完會換算<b>盾牌</b>（最多 5 個）<br>
-      ・題目全部原創，僅模仿官方題型，未使用官方考古題
+      ・題目全部原創，僅模仿官方題型，未使用官方考古題<br>
+      ・點 <b>🔊</b> 可以聽英文發音，聽力題會用<b>兩種聲音</b>唸對話
     </div>
   </div>
 
@@ -198,6 +215,175 @@ const KEYS = ["A","B","C","D"];
 const $ = id => document.getElementById(id);
 const BLOCK = 10;
 
+/* ================= 發音（Web Speech API，瀏覽器內建，不需音檔） ================= */
+const SPK = { ok:("speechSynthesis" in window), on:true, auto:false, vA:null, vB:null, primed:false };
+const FEM = /^(girl|woman|lady|shop lady|mum|mom|mother|grandma|aunt|miss|mrs|ms|anna|kim|kate|mary|sally|helen|julia|sue|jane|sophie|emma|lucy|vicky|sarah|katy|teacher)$/i;
+const MAL = /^(boy|man|dad|father|grandpa|uncle|mr|tom|ben|sam|jack|jim|peter|paul|robert|william|michael|daniel|fred|bill)$/i;
+
+function pickVoices(){
+  if (!SPK.ok) return;
+  const all = speechSynthesis.getVoices().filter(v => /^en[-_]?/i.test(v.lang));
+  if (!all.length) return;
+  const gb = all.filter(v => /en[-_]GB/i.test(v.lang));
+  const us = all.filter(v => /en[-_]US/i.test(v.lang));
+  const pool = gb.length ? gb : (us.length ? us : all);
+  const find = n => pool.find(v => v.name.toLowerCase().indexOf(n) >= 0);
+  SPK.vA = find("female") || find("samantha") || find("karen") || find("zira") || pool[0];
+  SPK.vB = pool.find(v => v !== SPK.vA) || SPK.vA;
+}
+if (SPK.ok){ pickVoices(); speechSynthesis.onvoiceschanged = pickVoices; }
+
+/* iOS / Safari 需要先有一次使用者操作才允許發音 */
+document.addEventListener("click", function(){
+  if (!SPK.ok || SPK.primed) return;
+  SPK.primed = true;
+  try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } catch(e){}
+}, true);
+
+function stopSpeak(){ if (SPK.ok) { try { speechSynthesis.cancel(); } catch(e){} } }
+
+function stripTags(h){ const d = document.createElement("div"); d.innerHTML = String(h||""); return d.textContent || ""; }
+/* 去掉中文、全形標點、符號；把 ___ 唸成 blank */
+function cleanEN(t){
+  return stripTags(t)
+    .replace(/_{2,}/g, " blank ")
+    .replace(/[\u4E00-\u9FFF\u3000-\u303F\uFF00-\uFFEF]/g, " ")
+    .replace(/[✔✘🛡️▫️]/g, " ")
+    .replace(/\(\s*\)/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+function hasEN(t){ return /[a-zA-Z]{2}/.test(t || ""); }
+
+/* 對話 → 逐句（不同說話者用不同聲音與音高） */
+function dialogLines(html){
+  return String(html||"").split(/<br\s*\/?>/i).map(function(line){
+    const raw = stripTags(line).trim();
+    const m = raw.match(/^([A-Za-z' ]{1,12}):\s*([\s\S]*)$/);
+    const who = m ? m[1].trim() : "";
+    const txt = cleanEN(m ? m[2] : raw);
+    let voice = SPK.vA, pitch = 1.06;
+    if (FEM.test(who)) { voice = SPK.vA; pitch = 1.22; }
+    else if (MAL.test(who)) { voice = SPK.vB; pitch = 0.78; }
+    return { t: txt, voice: voice, pitch: pitch, rate: 0.85 };
+  }).filter(function(x){ return hasEN(x.t); });
+}
+
+/* 一題要唸的內容 */
+function questionSay(it){
+  const out = [];
+  if (it.dialog) dialogLines(it.dialog).forEach(function(l){ out.push(l); });
+  const q = cleanEN(it.q);
+  if (hasEN(q)) out.push({ t:q, pitch:1.06, rate:(it.dialog ? 0.85 : 0.8) });
+  return out;
+}
+/* 短文／故事：逐句唸（切句避免瀏覽器唸太長被截斷） */
+function sceneSay(it){
+  if (!it.scene) return [];
+  const d = document.createElement("div");
+  d.innerHTML = it.scene;
+  const out = [];
+  d.querySelectorAll(".textbox, .cap").forEach(function(node){
+    const txt = cleanEN(node.innerHTML);
+    if (!hasEN(txt)) return;
+    (txt.match(/[^.!?]+[.!?]*/g) || [txt]).forEach(function(sent){
+      const t = sent.trim();
+      if (hasEN(t)) out.push({ t:t, pitch:1.06, rate:0.85 });
+    });
+  });
+  return out;
+}
+function optionSay(it){
+  if (it.type !== "mcq" || !it.o) return [];
+  const out = [];
+  it.o.forEach(function(o, i){
+    const c = cleanEN(o);
+    if (hasEN(c)) out.push({ t: KEYS[i] + ". " + c, pitch:1.06, rate:0.82 });
+  });
+  return out;
+}
+/* 正確答案：填空題唸「補好的完整句子」 */
+function answerSay(it){
+  if (it.type === "input"){
+    const w = cleanEN(it.ans[0]);
+    return hasEN(w) ? [{ t:w, pitch:1.06, rate:0.7 }] : [];
+  }
+  if (it.type === "tf" || it.type === "yn"){
+    const s = cleanEN(it.q);
+    return hasEN(s) ? [{ t:s, pitch:1.06, rate:0.78 }] : [];
+  }
+  const raw = String(it.q || ""), pick = it.o[it.a];
+  if (/_{2,}/.test(raw)){
+    const full = cleanEN(raw.replace(/_{2,}/, " " + pick + " "));
+    if (hasEN(full)) return [{ t:full, pitch:1.06, rate:0.78 }];
+  }
+  const c = cleanEN(pick);
+  return hasEN(c) ? [{ t:c, pitch:1.06, rate:0.7 }] : [];
+}
+
+function say(list){
+  if (!SPK.ok || !SPK.on || !list || !list.length) return;
+  stopSpeak();
+  list.forEach(function(x){
+    const u = new SpeechSynthesisUtterance(x.t);
+    u.lang = "en-GB";
+    u.rate = x.rate || 0.85;
+    u.pitch = x.pitch || 1;
+    if (x.voice) u.voice = x.voice;
+    speechSynthesis.speak(u);
+  });
+}
+
+function spkBtn(label, getList, cls){
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "spk" + (cls ? " " + cls : "");
+  b.textContent = label;
+  b.onclick = function(e){
+    e.preventDefault(); e.stopPropagation();
+    if (!SPK.on){ SPK.on = true; syncBar(); }
+    say(getList());
+    b.classList.add("playing");
+    setTimeout(function(){ b.classList.remove("playing"); }, 900);
+  };
+  return b;
+}
+function buildSpeakRow(it){
+  if (!SPK.ok) return;
+  const qs = questionSay(it), os = optionSay(it), sc = sceneSay(it);
+  if (!qs.length && !os.length && !sc.length) return;
+  const row = document.createElement("div");
+  row.className = "speakrow";
+  if (qs.length) row.appendChild(spkBtn(it.dialog ? "🔊 播放對話" : "🔊 唸題目", function(){ return qs; }));
+  if (sc.length) row.appendChild(spkBtn("🔊 唸短文", function(){ return sc; }, "mini"));
+  if (os.length) row.appendChild(spkBtn("🔊 唸選項", function(){ return os; }, "mini"));
+  $("qbody").appendChild(row);
+}
+function syncBar(){
+  const bar = $("audioBar");
+  if (!bar) return;
+  if (!SPK.ok){ bar.innerHTML = '<span class="lab">這個瀏覽器不支援發音功能</span>'; return; }
+  bar.innerHTML = "";
+  const b1 = document.createElement("button");
+  b1.type = "button";
+  b1.className = "spk" + (SPK.on ? " on" : "");
+  b1.textContent = SPK.on ? "🔊 發音：開" : "🔇 發音：關";
+  b1.onclick = function(){
+    SPK.on = !SPK.on;
+    if (!SPK.on){ SPK.auto = false; stopSpeak(); }
+    syncBar();
+  };
+  const b2 = document.createElement("button");
+  b2.type = "button";
+  b2.className = "spk mini" + (SPK.auto ? " on" : "");
+  b2.textContent = SPK.auto ? "▶️ 自動唸題：開" : "▶️ 自動唸題：關";
+  b2.onclick = function(){
+    SPK.auto = !SPK.auto;
+    if (SPK.auto) SPK.on = true;
+    syncBar();
+  };
+  bar.appendChild(b1); bar.appendChild(b2);
+}
+
 let L = null, active = [], blocks = [], bi = 0, pos = 0, answers = [], mode = "quiz";
 let fixQueue = [], fixPos = 0, blockScores = [], partName = null, partDone = {};
 
@@ -217,6 +403,7 @@ function show(box){
   ["homeBox","partBox","quizBox","resultBox","finalBox"].forEach(b => $(b).classList.toggle("hide", b !== box));
 }
 function goHome(){
+  stopSpeak();
   L = null; partName = null;
   $("pageTitle").textContent = "📚 英文能力檢定";
   $("pageSub").textContent = "選一個程度開始練習";
@@ -238,6 +425,7 @@ function partNames(){
   return out;
 }
 function buildPartMenu(){
+  stopSpeak();
   const names = partNames();
   const box = $("partList"); box.innerHTML = "";
   names.forEach((nm, k) => {
@@ -294,6 +482,11 @@ function render(){
   if (it.scramble) body += '<div class="scramble">'+it.scramble+'</div>';
   if (it.q) body += '<div class="qtext">'+it.q+'</div>';
   $("qbody").innerHTML = body;
+  buildSpeakRow(it);
+  if (SPK.auto && SPK.on){
+    const autoList = questionSay(it);
+    if (autoList.length) setTimeout(function(){ say(autoList); }, 280);
+  }
 
   const area = $("answerArea"); area.innerHTML = "";
   $("hint").className = "hint"; $("hint").innerHTML = "";
@@ -333,6 +526,13 @@ function afterAnswer(ok, it){
   const h = $("hint");
   h.className = "hint show " + (ok ? "good" : "bad");
   h.innerHTML = ok ? "✅ 答對了！<br>"+it.e : "❌ 正確答案是 <b>"+correctText(it)+"</b><br>"+it.e;
+  const aList = answerSay(it);
+  if (SPK.ok && aList.length){
+    const r = document.createElement("div");
+    r.className = "speakrow";
+    r.appendChild(spkBtn("🔊 聽正確答案", function(){ return aList; }, "mini"));
+    h.appendChild(r);
+  }
   $("nextBtn").classList.remove("hide");
   $("nextBtn").textContent = (fixPos+1 >= fixQueue.length) ? "完成訂正 ▶" : "下一題 ▶";
 }
@@ -363,6 +563,7 @@ function isRight(it, ans){ return it.type === "input" ? ans === "OK" : ans === i
 
 /* ---------- 每 10 題結算 ---------- */
 function finishBlock(){
+  stopSpeak();
   const list = blkItems();
   let right = 0;
   list.forEach((it,i)=>{ if (isRight(it, answers[i])) right++; });
@@ -446,6 +647,7 @@ $("quitBtn2").onclick = backTarget;
 $("quitBtn0").onclick = goHome;
 $("allBtn").onclick = () => startRange(L.items, null);
 
+syncBar();
 buildHome();
 goHome();
 </script>

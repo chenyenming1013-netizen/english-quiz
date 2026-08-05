@@ -141,6 +141,11 @@
   .audiobar{display:flex;gap:8px;justify-content:center;align-items:center;
             flex-wrap:wrap;margin:-8px 0 16px;}
   .audiobar .lab{font-size:12px;color:var(--soft);}
+  .listenbox{border:2.5px dashed var(--line);border-radius:14px;padding:15px 13px;
+             margin:12px 0;text-align:center;background:#fafbfd;}
+  .listenbox .st{font-size:14px;font-weight:800;color:var(--soft);margin-bottom:11px;}
+  .listenbox .btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .listenbox .dialog{margin:13px 0 0;text-align:left;}
 </style>
 </head>
 <body>
@@ -158,7 +163,9 @@
       ・答錯的題目可以立刻<b>訂正</b>，訂正時選錯會馬上看到正確答案和說明<br>
       ・YLE 三個級別依照劍橋官方規定的題數設計，做完會換算<b>盾牌</b>（最多 5 個）<br>
       ・題目全部原創，僅模仿官方題型，未使用官方考古題<br>
-      ・點 <b>🔊</b> 可以聽英文發音，聽力題會用<b>兩種聲音</b>唸對話
+      ・點 <b>🔊</b> 可以聽英文發音（題目、短文、選項、正確答案）<br>
+      ・YLE <b>聽力題是真的用聽的</b>：對話文字先蓋住，自動播 1 次、可再聽 1 次，
+        聽完才會出現「看文字」;兩個說話的人用不同聲音
     </div>
   </div>
 
@@ -320,17 +327,79 @@ function answerSay(it){
   return hasEN(c) ? [{ t:c, pitch:1.06, rate:0.7 }] : [];
 }
 
-function say(list){
-  if (!SPK.ok || !SPK.on || !list || !list.length) return;
+function say(list, onStart, onEnd){
+  if (!SPK.ok || !SPK.on || !list || !list.length){ if (onEnd) onEnd(); return; }
   stopSpeak();
-  list.forEach(function(x){
+  const last = list.length - 1;
+  list.forEach(function(x, i){
     const u = new SpeechSynthesisUtterance(x.t);
     u.lang = "en-GB";
     u.rate = x.rate || 0.85;
     u.pitch = x.pitch || 1;
     if (x.voice) u.voice = x.voice;
+    if (i === 0 && onStart) u.onstart = onStart;
+    if (i === last && onEnd){ u.onend = onEnd; u.onerror = onEnd; }
     speechSynthesis.speak(u);
   });
+}
+
+/* ---------- 聽力題：文字先藏起來，自動播 1 次 ＋ 可再聽 1 次 ---------- */
+function buildListenBox(it, slot){
+  const fix = (mode === "fix");
+  const lines = questionSay(it);
+  const box = document.createElement("div"); box.className = "listenbox";
+  const st  = document.createElement("div"); st.className = "st";
+  const btns= document.createElement("div"); btns.className = "btns";
+  const dlg = document.createElement("div"); dlg.className = "dialog";
+  dlg.innerHTML = it.dialog;
+  dlg.style.display = fix ? "" : "none";
+  box.appendChild(st); box.appendChild(btns); box.appendChild(dlg);
+  slot.appendChild(box);
+
+  const playBtn = document.createElement("button");
+  playBtn.type = "button"; playBtn.className = "spk";
+  btns.appendChild(playBtn);
+
+  const textBtn = document.createElement("button");
+  textBtn.type = "button"; textBtn.className = "spk mini";
+  textBtn.textContent = "👀 看文字";
+  textBtn.onclick = function(){ dlg.style.display = ""; textBtn.remove(); };
+
+  let plays = 0, textShown = fix;
+
+  function refresh(){
+    playBtn.disabled = false;
+    if (fix){ playBtn.textContent = "🔁 再聽一次"; return; }
+    if (plays === 0) playBtn.textContent = "▶️ 播放對話";
+    else if (plays === 1) playBtn.textContent = "🔁 再聽一次（剩 1 次）";
+    else { playBtn.textContent = "✅ 已經聽 2 次了"; playBtn.disabled = true; }
+  }
+  function play(auto){
+    if (!fix && plays >= 2) return;
+    if (!fix) plays++;
+    let started = false;
+    st.textContent = "🔊 播放中…";
+    playBtn.disabled = true;
+    say(lines,
+      function(){ started = true; },
+      function(){
+        if (fix){ st.textContent = "🎧 訂正中，可以重複聽"; refresh(); return; }
+        st.textContent = plays >= 2 ? "聽完囉，選一個答案吧" : "還可以再聽一次";
+        refresh();
+        if (!textShown){ btns.appendChild(textBtn); textShown = true; }
+      });
+    if (auto) setTimeout(function(){
+      if (!started){                       /* 瀏覽器擋掉自動播放時的退路 */
+        plays = 0;
+        st.textContent = "🎧 點下面的按鈕開始聽";
+        refresh();
+      }
+    }, 1800);
+  }
+  playBtn.onclick = function(){ play(false); };
+  st.textContent = fix ? "🎧 訂正中，可以重複聽" : "🎧 仔細聽";
+  refresh();
+  setTimeout(function(){ play(true); }, 450);
 }
 
 function spkBtn(label, getList, cls){
@@ -347,9 +416,9 @@ function spkBtn(label, getList, cls){
   };
   return b;
 }
-function buildSpeakRow(it){
+function buildSpeakRow(it, listenMode){
   if (!SPK.ok) return;
-  const qs = questionSay(it), os = optionSay(it), sc = sceneSay(it);
+  const qs = listenMode ? [] : questionSay(it), os = optionSay(it), sc = sceneSay(it);
   if (!qs.length && !os.length && !sc.length) return;
   const row = document.createElement("div");
   row.className = "speakrow";
@@ -371,6 +440,9 @@ function syncBar(){
     SPK.on = !SPK.on;
     if (!SPK.on){ SPK.auto = false; stopSpeak(); }
     syncBar();
+    /* 正在作答聽力題時切換，要重畫（關掉聲音就把對話文字放出來，才不會卡住） */
+    const qb = $("quizBox");
+    if (qb && !qb.classList.contains("hide") && L) render();
   };
   const b2 = document.createElement("button");
   b2.type = "button";
@@ -478,12 +550,15 @@ function render(){
 
   let body = "";
   if (it.pic) body += '<div class="bigpic">'+it.pic+'</div>';
-  if (it.dialog) body += '<div class="dialog">'+it.dialog+'</div>';
+  const listenMode = !!it.dialog && SPK.ok && SPK.on;
+  if (it.dialog) body += listenMode ? '<div id="listenSlot"></div>'
+                                    : '<div class="dialog">'+it.dialog+'</div>';
   if (it.scramble) body += '<div class="scramble">'+it.scramble+'</div>';
   if (it.q) body += '<div class="qtext">'+it.q+'</div>';
   $("qbody").innerHTML = body;
-  buildSpeakRow(it);
-  if (SPK.auto && SPK.on){
+  if (listenMode) buildListenBox(it, $("listenSlot"));
+  buildSpeakRow(it, listenMode);
+  if (SPK.auto && SPK.on && !listenMode){
     const autoList = questionSay(it);
     if (autoList.length) setTimeout(function(){ say(autoList); }, 280);
   }

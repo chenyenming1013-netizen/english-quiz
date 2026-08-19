@@ -40,6 +40,11 @@
   .prt .s{font-size:12.5px;color:var(--soft);margin-top:1px;}
   .prt .sc{margin-left:auto;flex:0 0 auto;font-size:13px;font-weight:800;color:var(--green);}
   .prt.done{border-color:var(--green);background:#f3fbf5;}
+  .sechd{display:flex;align-items:center;gap:8px;margin:15px 2px 7px;font-size:14px;
+         font-weight:900;color:var(--soft);letter-spacing:.5px;}
+  .sechd::after{content:"";flex:1;height:2px;background:var(--line);border-radius:2px;}
+  .prt.whole{border-style:dashed;}
+  .prt.whole .n{background:#e8eef7;}
   .prt.done .n{background:var(--green);color:#fff;}
 
   .meta{display:flex;justify-content:space-between;font-size:13px;color:var(--soft);margin-bottom:6px;}
@@ -177,6 +182,7 @@
   <h1 id="pageTitle">📚 英文能力檢定</h1>
   <div class="sub" id="pageSub">選一個程度開始練習</div>
   <div class="audiobar" id="audioBar"></div>
+  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v7　479 題　可分 Part 練習</div>
 
   <!-- 首頁 -->
   <div id="homeBox">
@@ -643,31 +649,52 @@ function showMenu(){
 }
 function isListen(it){ return /Listening/i.test(it.part || ""); }
 
-/* YLE：閱讀寫作 / 聽力 */
+/* YLE / A2 Key：閱讀寫作與聽力，各自再拆成一個個 Part
+   這樣做完一個 Part 就記一次分數，中斷了不必整份重來 */
 function buildSectionMenu(){
   stopSpeak();
   const box = $("partList"); box.innerHTML = "";
-  const secs = [
-    { nm:"閱讀寫作 Reading & Writing", icon:"📖", d:"看圖、讀短文、選字、拼字",
-      f:function(it){ return !isListen(it); } },
-    { nm:"聽力 Listening", icon:"🎧", d:"對話文字會蓋住，用聽的作答",
-      f:function(it){ return isListen(it); } }
-  ];
-  secs.forEach(function(sec){
-    const list = L.items.filter(sec.f);
-    if (!list.length) return;
-    const done = (partDone[L.id] || {})[sec.nm];
+  const done = partDone[L.id] || {};
+
+  function addRow(nm, label, sub, icon, list, cls){
+    const sc = done[nm];
     const b = document.createElement("button");
-    b.className = "prt" + (done !== undefined ? " done" : "");
-    b.innerHTML = '<span class="n">'+sec.icon+'</span><span><span class="t">'+sec.nm+'</span>'
-                + '<span class="s">'+list.length+' 題　'+sec.d+'</span></span>'
-                + (done !== undefined ? '<span class="sc">'+done+' 分</span>' : '');
-    b.onclick = function(){ startRange(list, sec.nm); };
+    b.className = "prt" + (sc !== undefined ? " done" : "") + (cls ? " " + cls : "");
+    b.innerHTML = '<span class="n">'+icon+'</span><span><span class="t">'+label+'</span>'
+                + '<span class="s">'+sub+'</span></span>'
+                + (sc !== undefined ? '<span class="sc">'+sc+' 分</span>' : '');
+    b.onclick = function(){ startRange(list, nm); };
     box.appendChild(b);
+  }
+
+  [{ t:"📖　閱讀寫作 Reading & Writing", f:function(it){ return !isListen(it); },
+     whole:"整個閱讀寫作", icon:"📖" },
+   { t:"🎧　聽力 Listening", f:function(it){ return isListen(it); },
+     whole:"整個聽力", icon:"🎧" }
+  ].forEach(function(sec){
+    const all = L.items.filter(sec.f);
+    if (!all.length) return;
+    const hd = document.createElement("div");
+    hd.className = "sechd"; hd.textContent = sec.t;
+    box.appendChild(hd);
+
+    /* 這一區裡有哪些 Part（保持原順序） */
+    const names = [];
+    all.forEach(function(it){ if (names.indexOf(it.part) < 0) names.push(it.part); });
+    names.forEach(function(nm, k){
+      const list = L.items.filter(function(it){ return it.part === nm; });
+      const seg = nm.split("｜");
+      const m = seg[0].match(/Part\s*(\d+)/i);
+      const head = m ? ("Part " + m[1]) : seg[0];      /* 區塊標題已標明是哪一區，這裡只留 Part N */
+      const tail = seg[1] ? seg[1] : "";
+      addRow(nm, head, list.length + " 題" + (tail ? "　" + tail : ""), k+1, list);
+    });
+    addRow(sec.whole, sec.whole, all.length + " 題　連著做完這一整區", sec.icon, all, "whole");
   });
+
   $("allBtn").textContent = "🏅 完整測驗 " + L.items.length + " 題（做完評"
                           + (L.shield ? "盾牌" : "等第") + "）";
-  $("pageSub").textContent = "選一個部分練習，或做完整份測驗";
+  $("pageSub").textContent = "可以只練一個 Part，做完就會記分數；或做完整份測驗";
   show("partBox");
 }
 

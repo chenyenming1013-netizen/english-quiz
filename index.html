@@ -205,7 +205,7 @@
   <h1 id="pageTitle">📚 英文能力檢定</h1>
   <div class="sub" id="pageSub">選一個程度開始練習</div>
   <div class="audiobar" id="audioBar"></div>
-  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v12　1144 題　單字定義改全英文聽寫</div>
+  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v13　題庫擴充＋隨機抽題</div>
 
   <!-- 首頁 -->
   <div id="homeBox">
@@ -277,6 +277,181 @@ const KEYS = ["A","B","C","D"];
 const $ = id => document.getElementById(id);
 const VOCAB = [["第 37 週單字", [["before", "prep.", "at an earlier time", "在…之前"], ["below", "prep.", "in a lower place", "在…下面"], ["always", "adv.", "at all times", "總是"], ["often", "adv.", "many times", "經常"], ["arrive", "v.", "to reach a place", "抵達"], ["borrow", "v.", "to take something and give it back later", "借入"], ["gather", "v.", "to come together in one place", "聚集"], ["whisper", "v.", "to speak very softly", "低聲說"], ["describe", "v.", "to say what something is like", "描述"], ["ancient", "adj.", "very old", "古老的"]]], ["第 38 週單字", [["between", "prep.", "in the middle of two things", "在兩者之間"], ["during", "prep.", "through the whole of a time", "在…期間"], ["seldom", "adv.", "almost never", "很少"], ["suddenly", "adv.", "happening very quickly", "突然地"], ["collect", "v.", "to bring things together", "收集"], ["decide", "v.", "to choose after thinking", "決定"], ["repair", "v.", "to make something work again", "修理"], ["shout", "v.", "to say something very loudly", "大喊"], ["polite", "adj.", "behaving in a kind way", "有禮貌的"], ["empty", "adj.", "having nothing inside", "空的"]]], ["第 39 週單字", [["against", "prep.", "touching or opposing something", "靠著；反對"], ["without", "prep.", "not having something", "沒有"], ["already", "adv.", "before now", "已經"], ["carefully", "adv.", "in a careful way", "小心地"], ["explain", "v.", "to make something clear", "解釋"], ["invite", "v.", "to ask someone to come", "邀請"], ["protect", "v.", "to keep someone safe", "保護"], ["disappear", "v.", "to go out of sight", "消失"], ["brave", "adj.", "not afraid of danger", "勇敢的"], ["famous", "adj.", "known by many people", "有名的"]]], ["第 40 週單字", [["among", "prep.", "in the middle of a group", "在…之中"], ["through", "prep.", "from one side to the other", "穿過"], ["nearly", "adv.", "almost but not quite", "幾乎"], ["quietly", "adv.", "without much noise", "安靜地"], ["choose", "v.", "to pick one thing", "選擇"], ["improve", "v.", "to become better", "改善"], ["measure", "v.", "to find the size of something", "測量"], ["complain", "v.", "to say you are not happy", "抱怨"], ["dangerous", "adj.", "able to cause harm", "危險的"], ["expensive", "adj.", "costing a lot of money", "昂貴的"]]]];
 const POS_ZH = {"n.": "名詞", "v.": "動詞", "adj.": "形容詞", "adv.": "副詞", "prep.": "介系詞", "conj.": "連接詞"};
+
+
+
+/* ══════════════════════════════════════════════════════════
+   Basic 題目產生器：用資料表自動出題。
+   加一筆資料就等於多好幾題，而且每次點開的選項和順序都不同。
+   ══════════════════════════════════════════════════════════ */
+
+/* 名詞單複數：[單數, 複數, 規則說明] */
+const D_PLURAL = [
+ ["book","books","一般名詞直接加 s"],["box","boxes","字尾 x 加 es"],
+ ["baby","babies","子音 + y 去 y 加 ies"],["child","children","不規則變化"],
+ ["leaf","leaves","字尾 f 變 ves"],["tomato","tomatoes","字尾 o 加 es"],
+ ["man","men","不規則變化"],["mouse","mice","不規則變化"],
+ ["city","cities","子音 + y 去 y 加 ies"],["sheep","sheep","單複數同形"],
+ ["knife","knives","字尾 fe 變 ves"],["tooth","teeth","不規則變化"],
+ ["bus","buses","字尾 s 加 es"],["foot","feet","不規則變化"],
+ ["dish","dishes","字尾 sh 加 es"],["watch","watches","字尾 ch 加 es"],
+ ["wolf","wolves","字尾 f 變 ves"],["person","people","不規則變化"],
+ ["potato","potatoes","字尾 o 加 es"],["story","stories","子音 + y 去 y 加 ies"],
+ ["goose","geese","不規則變化"],["fish","fish","單複數同形"],
+ ["lady","ladies","子音 + y 去 y 加 ies"],["glass","glasses","字尾 ss 加 es"],
+ ["shelf","shelves","字尾 f 變 ves"],["boy","boys","母音 + y 直接加 s"],
+ ["church","churches","字尾 ch 加 es"],["life","lives","字尾 fe 變 ves"],
+ ["deer","deer","單複數同形"],["woman","women","不規則變化"]
+];
+
+/* 不規則動詞：[原形, 過去式, 過去分詞] */
+const D_IRREG = [
+ ["go","went","gone"],["take","took","taken"],["buy","bought","bought"],
+ ["drink","drank","drunk"],["give","gave","given"],["sit","sat","sat"],
+ ["begin","began","begun"],["teach","taught","taught"],["fly","flew","flown"],
+ ["catch","caught","caught"],["sleep","slept","slept"],["run","ran","run"],
+ ["write","wrote","written"],["swim","swam","swum"],["bring","brought","brought"],
+ ["think","thought","thought"],["leave","left","left"],["find","found","found"],
+ ["speak","spoke","spoken"],["stand","stood","stood"],["eat","ate","eaten"],
+ ["see","saw","seen"],["make","made","made"],["come","came","come"],
+ ["sell","sold","sold"],["break","broke","broken"],["sing","sang","sung"],
+ ["ride","rode","ridden"],["understand","understood","understood"],["wear","wore","worn"],
+ ["feel","felt","felt"],["keep","kept","kept"],["lose","lost","lost"],
+ ["meet","met","met"],["pay","paid","paid"],["read","read","read"],
+ ["send","sent","sent"],["tell","told","told"],["win","won","won"],["build","built","built"]
+];
+
+/* 冠詞：[名詞, 正解 a/an, 說明] */
+const D_ARTICLE = [
+ ["apple","an","母音開頭用 an"],["book","a","子音開頭用 a"],
+ ["orange","an","母音開頭用 an"],["egg","an","母音開頭用 an"],
+ ["umbrella","an","母音開頭用 an"],["hour","an","h 不發音，念起來像母音"],
+ ["honest boy","an","honest 的 h 不發音"],["university","a","念起來像 you，是子音開頭"],
+ ["elephant","an","母音開頭用 an"],["car","a","子音開頭用 a"],
+ ["island","an","母音開頭用 an"],["European country","a","念起來像 you"],
+ ["ice cream","an","母音開頭用 an"],["uncle","an","母音開頭用 an"],
+ ["house","a","h 有發音，是子音"],["old man","an","old 是母音開頭"],
+ ["animal","an","母音開頭用 an"],["window","a","子音開頭用 a"]
+];
+
+/* 比較級最高級：[原級, 比較級, 最高級] */
+const D_COMP = [
+ ["big","bigger","biggest"],["tall","taller","tallest"],["happy","happier","happiest"],
+ ["good","better","best"],["bad","worse","worst"],["hot","hotter","hottest"],
+ ["easy","easier","easiest"],["fast","faster","fastest"],["heavy","heavier","heaviest"],
+ ["nice","nicer","nicest"],["thin","thinner","thinnest"],["early","earlier","earliest"],
+ ["young","younger","youngest"],["busy","busier","busiest"],["large","larger","largest"],
+ ["far","farther","farthest"],["cold","colder","coldest"],["funny","funnier","funniest"]
+];
+
+/* 介系詞：時間 [句子, 正解] */
+const D_PREP_T = [
+ ["My birthday is ___ May.","in","月份用 in"],
+ ["We have a test ___ Friday.","on","星期幾用 on"],
+ ["The film starts ___ seven o'clock.","at","時刻用 at"],
+ ["I was born ___ 2015.","in","年份用 in"],
+ ["She works ___ night.","at","at night 是固定用法"],
+ ["We will finish ___ an hour.","in","「再過多久」用 in"],
+ ["Please come ___ Monday morning.","on","特定某天的早上用 on"],
+ ["The shop is closed ___ Sundays.","on","星期幾用 on"],
+ ["They arrive ___ noon.","at","at noon 是固定用法"],
+ ["It is cold ___ winter.","in","季節用 in"],
+ ["He goes swimming ___ the weekend.","at","at the weekend 是固定用法"],
+ ["We met ___ my birthday.","on","特定某一天用 on"],
+ ["The class begins ___ half past eight.","at","時刻用 at"],
+ ["Leaves fall ___ autumn.","in","季節用 in"],
+ ["I will call you ___ Tuesday evening.","on","特定某天的晚上用 on"]
+];
+
+/* 介系詞：地點 [句子, 正解, 說明] */
+const D_PREP_P = [
+ ["The picture is ___ the wall.","on","貼在表面上用 on"],
+ ["She lives ___ Taiwan.","in","國家用 in"],
+ ["I will meet you ___ the bus stop.","at","某個定點用 at"],
+ ["The cat is ___ the sofa. (下面)","under","在下方用 under"],
+ ["There is a bridge ___ the river.","over","橫跨上方用 over"],
+ ["The children are playing ___ the garden.","in","在花園裡用 in"],
+ ["The plane flew ___ the clouds.","above","在上方用 above"],
+ ["He is standing ___ the door.","behind","在後面用 behind"],
+ ["The keys are ___ my pocket.","in","在裡面用 in"],
+ ["We sat ___ the tree.","under","在樹下用 under"],
+ ["The book is ___ the table.","on","在桌面上用 on"],
+ ["She is waiting ___ the station.","at","定點用 at"],
+ ["The ball rolled ___ the bed.","under","在床底下用 under"],
+ ["My house is ___ the school and the park.","between","兩者之間用 between"]
+];
+
+/* 第三人稱單數動詞加 s：[動詞, 第三人稱形, 說明] */
+const D_THIRD = [
+ ["play","plays","一般動詞加 s"],["go","goes","字尾 o 加 es"],
+ ["watch","watches","字尾 ch 加 es"],["study","studies","子音 + y 去 y 加 ies"],
+ ["do","does","字尾 o 加 es"],["fly","flies","子音 + y 去 y 加 ies"],
+ ["wash","washes","字尾 sh 加 es"],["carry","carries","子音 + y 去 y 加 ies"],
+ ["teach","teaches","字尾 ch 加 es"],["buy","buys","母音 + y 直接加 s"],
+ ["fix","fixes","字尾 x 加 es"],["cry","cries","子音 + y 去 y 加 ies"],
+ ["miss","misses","字尾 ss 加 es"],["enjoy","enjoys","母音 + y 直接加 s"],
+ ["finish","finishes","字尾 sh 加 es"],["say","says","母音 + y 直接加 s"]
+];
+
+function genBasicExtra(){
+  const out = [];
+  function add(part, q, right, wrongs, e, type){
+    if (type === "input"){ out.push({ part:part, q:q, type:"input", ans:[right], e:e }); return; }
+    const m = mixOpts(right, wrongs);
+    out.push({ part:part, q:q, type:"mcq", o:m.o, a:m.a, e:e });
+  }
+  /* 名詞單複數 */
+  const P2 = "Basic Part 2｜名詞單複數 Plural Nouns";
+  D_PLURAL.forEach(function(r){
+    const wrong = shuffle(D_PLURAL.filter(function(x){ return x[1] !== r[1]; }))
+                    .slice(0, 2).map(function(x){ return x[1]; });
+    add(P2, "one " + r[0] + " → three ___", r[1], wrong, r[0] + " 的複數是 " + r[1] + "（" + r[2] + "）。");
+    if (Math.random() < 0.4)
+      add(P2, "plural of '" + r[0] + "' （打字作答）", r[1], [], r[0] + " → " + r[1] + "（" + r[2] + "）。", "input");
+  });
+  /* 不規則動詞 */
+  const P12 = "Basic Part 12｜不規則動詞過去式 Irregular Verbs";
+  D_IRREG.forEach(function(r){
+    const wrong = shuffle(D_IRREG.filter(function(x){ return x[1] !== r[1]; }))
+                    .slice(0, 2).map(function(x){ return x[1]; });
+    add(P12, "past tense of '" + r[0] + "'", r[1], wrong, r[0] + " → " + r[1] + "（過去分詞 " + r[2] + "）。");
+    if (Math.random() < 0.4)
+      add(P12, "past participle of '" + r[0] + "' （打字作答）", r[2], [],
+          r[0] + " 的過去分詞是 " + r[2] + "。", "input");
+  });
+  /* 冠詞 */
+  const P3 = "Basic Part 3｜冠詞 Articles";
+  D_ARTICLE.forEach(function(r){
+    add(P3, "This is ___ " + r[0] + ".", r[1], r[1] === "a" ? ["an", "the"] : ["a", "the"],
+        r[0] + "：" + r[2] + "。");
+  });
+  /* 比較級最高級 */
+  const P17 = "Basic Part 17｜比較級與最高級 Comparatives";
+  D_COMP.forEach(function(r){
+    add(P17, "This one is ___ than that one. (" + r[0] + ")", r[1], [r[0], r[2]],
+        r[0] + " 的比較級是 " + r[1] + "，最高級是 " + r[2] + "。");
+    add(P17, "It is the ___ in the class. (" + r[0] + ")", r[2], [r[0], r[1]],
+        r[0] + " 的最高級是 " + r[2] + "。");
+  });
+  /* 介系詞 */
+  const P20 = "Basic Part 20｜介系詞：時間 Time";
+  D_PREP_T.forEach(function(r){
+    add(P20, r[0], r[1], shuffle(["in", "on", "at"].filter(function(x){ return x !== r[1]; })).slice(0, 2),
+        r[2] + "。");
+  });
+  const P19 = "Basic Part 19｜介系詞：地點 Place";
+  const PP = ["in", "on", "at", "under", "over", "above", "behind", "between"];
+  D_PREP_P.forEach(function(r){
+    add(P19, r[0], r[1], shuffle(PP.filter(function(x){ return x !== r[1]; })).slice(0, 2), r[2] + "。");
+  });
+  /* 現在簡單式第三人稱 */
+  const P8 = "Basic Part 8｜現在簡單式 Present Simple";
+  D_THIRD.forEach(function(r){
+    add(P8, "He ___ every day. (" + r[0] + ")", r[1],
+        [r[0], r[0] + "ing"], r[2] + "：" + r[0] + " → " + r[1] + "。");
+  });
+  return out;
+}
 
 /* ---------- 單字級別：由單字表自動出題，每次點開都重新隨機 ---------- */
 function shuffle(a){
@@ -702,6 +877,9 @@ function buildVoicePicker(){
 let L = null, active = [], blocks = [], bi = 0, pos = 0, answers = [], mode = "quiz";
 let fixQueue = [], fixPos = 0, blockScores = [], partName = null, partDone = {};
 const RANDOM = { on: true };
+/* 每次出幾題（題庫更大，所以每次抽到的都不一樣） */
+const QUOTA_DEFAULT = 20;
+const QUOTA = {};
 /* 測驗模式 */
 let testMode = false, testEnd = 0, testTimer = null;
 const SEC_PER_Q = 40;          /* 每題 40 秒 */
@@ -824,9 +1002,14 @@ function goHome(){
 /* ---------- 選擇級別 ---------- */
 function openLevel(i){
   L = LEVELS[i];
-  if (L.gen) L.items = genVocab();          /* 單字級別每次重新出題 */
+  if (L.id === "basic" && !L._pooled){        /* Basic：把產生器的題目併進題庫，只做一次 */
+    L._base = L.items.slice();
+    L._pooled = true;
+  }
+  if (L._pooled) L.items = L._base.concat(genBasicExtra());
   $("pageTitle").textContent = L.icon + " " + L.title;
   $("pageSub").textContent = L.meta;
+  if (L.gen) L.items = genVocab();          /* 單字級別每次重新出題 */
   if (L.parts || L.gen) buildPartMenu();
   else if (L.shield || L.grade) buildSectionMenu();
   else startRange(L.items, null);
@@ -907,8 +1090,10 @@ function buildPartMenu(){
     const done = (partDone[L.id] || {})[nm];
     const b = document.createElement("button");
     b.className = "prt" + (done !== undefined ? " done" : "");
+    const serve = isExam(nm) ? n : Math.min(n, QUOTA_DEFAULT);
+    const sTxt = (n > serve) ? ("題庫 " + n + " 題　每次隨機抽 " + serve + " 題") : (n + " 題");
     b.innerHTML = '<span class="n">'+(k+1)+'</span><span><span class="t">'+(label[1]||label[0])+'</span>'
-                + '<span class="s">'+n+' 題</span></span>'
+                + '<span class="s">'+sTxt+'</span></span>'
                 + (done !== undefined ? '<span class="sc">'+done+' 分</span>' : '');
     b.onclick = function(){
       if (L.gen) L.items = genVocab();      /* 每次點開重新隨機 */
@@ -932,9 +1117,13 @@ function buildPartMenu(){
 /* ---------- 開始作答 ---------- */
 function startRange(list, nm){
   active = list; partName = nm;
-  /* Basic 單元與單字題：每次順序打亂。綜合測驗與 YLE 保持原順序（模擬真考試） */
-  if (RANDOM.on && partName && !isExam(partName) && !active.some(function(it){ return it.dialog; }))
+  /* Basic 單元與單字題：每次打亂，題庫比出題量大時隨機抽一部分
+     （綜合測驗與 YLE 保持原順序，因為要模擬真考試） */
+  if (RANDOM.on && partName && !isExam(partName) && !active.some(function(it){ return it.dialog; })){
     active = shuffle(active);
+    const serve = QUOTA[partName] || QUOTA_DEFAULT;
+    if (active.length > serve) active = active.slice(0, serve);
+  }
 
   /* 每 10 題結算，但同一段長對話的題目不可以被切到兩組去 */
   const key = active.map(function(it){

@@ -205,7 +205,7 @@
   <h1 id="pageTitle">📚 英文能力檢定</h1>
   <div class="sub" id="pageSub">選一個程度開始練習</div>
   <div class="audiobar" id="audioBar"></div>
-  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v13　題庫擴充＋隨機抽題</div>
+  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v14　全單元題庫 3 倍＋隨機抽題</div>
 
   <!-- 首頁 -->
   <div id="homeBox">
@@ -285,7 +285,53 @@ const POS_ZH = {"n.": "名詞", "v.": "動詞", "adj.": "形容詞", "adv.": "�
    加一筆資料就等於多好幾題，而且每次點開的選項和順序都不同。
    ══════════════════════════════════════════════════════════ */
 
-/* 名詞單複數：[單數, 複數, 規則說明] */
+/* ---- 詞類字庫（Part 1 用） ---- */
+const W_NOUN = ["teacher","river","kitchen","bread","garden","farmer","hospital","uncle","window","city",
+                "doctor","library","rabbit","bottle","mountain","sister","market","pencil","forest","village",
+ "bridge",
+ "letter",
+ "holiday",
+ "captain",
+ "island",
+ "painter",
+ "station",
+ "cousin",
+ "mirror",
+ "ticket",
+ "valley",
+ "singer",
+ "bakery",
+ "engine",
+ "pocket",
+ "dancer",
+ "harbour",
+ "blanket",
+ "stadium",
+ "cousin"
+];
+const W_VERB = ["jump","sing","write","carry","open","borrow","decide","climb","collect","whisper",
+ "gather",
+ "repair",
+ "invite",
+ "explain",
+ "measure",
+ "protect",
+ "complain",
+ "choose"
+];
+const W_ADJ  = ["happy","beautiful","hungry","dangerous","ancient","polite","empty","brave","famous","heavy",
+ "quiet",
+ "expensive",
+ "famous",
+ "gentle",
+ "modern",
+ "narrow",
+ "sudden",
+ "cheerful"
+];
+const W_ADV  = ["slowly","quickly","always","often","carefully","suddenly","seldom","quietly","nearly","早"];
+
+/* ---- 名詞單複數 [單數, 複數, 規則] ---- */
 const D_PLURAL = [
  ["book","books","一般名詞直接加 s"],["box","boxes","字尾 x 加 es"],
  ["baby","babies","子音 + y 去 y 加 ies"],["child","children","不規則變化"],
@@ -304,7 +350,7 @@ const D_PLURAL = [
  ["deer","deer","單複數同形"],["woman","women","不規則變化"]
 ];
 
-/* 不規則動詞：[原形, 過去式, 過去分詞] */
+/* ---- 不規則動詞 [原形, 過去式, 過去分詞] ---- */
 const D_IRREG = [
  ["go","went","gone"],["take","took","taken"],["buy","bought","bought"],
  ["drink","drank","drunk"],["give","gave","given"],["sit","sat","sat"],
@@ -317,11 +363,11 @@ const D_IRREG = [
  ["sell","sold","sold"],["break","broke","broken"],["sing","sang","sung"],
  ["ride","rode","ridden"],["understand","understood","understood"],["wear","wore","worn"],
  ["feel","felt","felt"],["keep","kept","kept"],["lose","lost","lost"],
- ["meet","met","met"],["pay","paid","paid"],["read","read","read"],
- ["send","sent","sent"],["tell","told","told"],["win","won","won"],["build","built","built"]
+ ["meet","met","met"],["pay","paid","paid"],["send","sent","sent"],
+ ["tell","told","told"],["win","won","won"],["build","built","built"],["drive","drove","driven"]
 ];
 
-/* 冠詞：[名詞, 正解 a/an, 說明] */
+/* ---- 冠詞 [名詞, a/an, 說明] ---- */
 const D_ARTICLE = [
  ["apple","an","母音開頭用 an"],["book","a","子音開頭用 a"],
  ["orange","an","母音開頭用 an"],["egg","an","母音開頭用 an"],
@@ -331,68 +377,417 @@ const D_ARTICLE = [
  ["island","an","母音開頭用 an"],["European country","a","念起來像 you"],
  ["ice cream","an","母音開頭用 an"],["uncle","an","母音開頭用 an"],
  ["house","a","h 有發音，是子音"],["old man","an","old 是母音開頭"],
- ["animal","an","母音開頭用 an"],["window","a","子音開頭用 a"]
+ ["animal","an","母音開頭用 an"],["window","a","子音開頭用 a"],
+ ["idea","an","母音開頭用 an"],
+ ["table","a","子音開頭用 a"],
+ ["owl","an","母音開頭用 an"],
+ ["uniform","a","念起來像 you，是子音開頭"],
+ ["eagle","an","母音開頭用 an"],
+ ["teacher","a","子音開頭用 a"],
+ ["armchair","an","母音開頭用 an"],
+ ["hospital","a","h 有發音"],
+ ["envelope","an","母音開頭用 an"],
+ ["yellow bag","a","y 是子音"],
+ ["umbrella stand","an","母音開頭用 an"],
+ ["one-way street","a","念起來像 won"],
+ ["apple pie","an","母音開頭用 an"],
+ ["useful tool","a","念起來像 you"]
 ];
 
-/* 比較級最高級：[原級, 比較級, 最高級] */
+/* ---- 比較級最高級 ---- */
 const D_COMP = [
  ["big","bigger","biggest"],["tall","taller","tallest"],["happy","happier","happiest"],
  ["good","better","best"],["bad","worse","worst"],["hot","hotter","hottest"],
  ["easy","easier","easiest"],["fast","faster","fastest"],["heavy","heavier","heaviest"],
  ["nice","nicer","nicest"],["thin","thinner","thinnest"],["early","earlier","earliest"],
  ["young","younger","youngest"],["busy","busier","busiest"],["large","larger","largest"],
- ["far","farther","farthest"],["cold","colder","coldest"],["funny","funnier","funniest"]
+ ["far","farther","farthest"],["cold","colder","coldest"],["funny","funnier","funniest"],
+ ["small","smaller","smallest"],
+ ["clean","cleaner","cleanest"],
+ ["dirty","dirtier","dirtiest"],
+ ["wide","wider","widest"],
+ ["strong","stronger","strongest"],
+ ["pretty","prettier","prettiest"]
 ];
 
-/* 介系詞：時間 [句子, 正解] */
+/* ---- 介系詞 ---- */
 const D_PREP_T = [
- ["My birthday is ___ May.","in","月份用 in"],
- ["We have a test ___ Friday.","on","星期幾用 on"],
- ["The film starts ___ seven o'clock.","at","時刻用 at"],
- ["I was born ___ 2015.","in","年份用 in"],
- ["She works ___ night.","at","at night 是固定用法"],
- ["We will finish ___ an hour.","in","「再過多久」用 in"],
- ["Please come ___ Monday morning.","on","特定某天的早上用 on"],
- ["The shop is closed ___ Sundays.","on","星期幾用 on"],
- ["They arrive ___ noon.","at","at noon 是固定用法"],
- ["It is cold ___ winter.","in","季節用 in"],
- ["He goes swimming ___ the weekend.","at","at the weekend 是固定用法"],
- ["We met ___ my birthday.","on","特定某一天用 on"],
- ["The class begins ___ half past eight.","at","時刻用 at"],
- ["Leaves fall ___ autumn.","in","季節用 in"],
- ["I will call you ___ Tuesday evening.","on","特定某天的晚上用 on"]
+ ["My birthday is ___ May.","in","月份用 in"],["We have a test ___ Friday.","on","星期幾用 on"],
+ ["The film starts ___ seven o'clock.","at","時刻用 at"],["I was born ___ 2015.","in","年份用 in"],
+ ["She works ___ night.","at","at night 是固定用法"],["We will finish ___ an hour.","in","「再過多久」用 in"],
+ ["Please come ___ Monday morning.","on","特定某天的早上用 on"],["The shop is closed ___ Sundays.","on","星期幾用 on"],
+ ["They arrive ___ noon.","at","at noon 是固定用法"],["It is cold ___ winter.","in","季節用 in"],
+ ["He goes swimming ___ the weekend.","at","at the weekend 是固定用法"],["We met ___ my birthday.","on","特定某一天用 on"],
+ ["The class begins ___ half past eight.","at","時刻用 at"],["Leaves fall ___ autumn.","in","季節用 in"],
+ ["I will call you ___ Tuesday evening.","on","特定某天的晚上用 on"],
+ ["School starts ___ September.","in","月份用 in"],
+ ["We eat lunch ___ twelve.","at","時刻用 at"],
+ ["He was born ___ a cold morning.","on","特定某個早上用 on"],
+ ["I study ___ the evening.","in","in the evening 是固定用法"],
+ ["The train leaves ___ ten past six.","at","時刻用 at"],
+ ["They moved here ___ 2010.","in","年份用 in"],
+ ["Let's meet ___ Saturday afternoon.","on","特定某天的下午用 on"],
+ ["I never work ___ midnight.","at","at midnight 是固定用法"],
+ ["It snows ___ January here.","in","月份用 in"],
+ ["The party is ___ New Year's Day.","on","特定節日當天用 on"],
+ ["She will be back ___ ten minutes.","in","「再過多久」用 in"],
+ ["We have music ___ Wednesdays.","on","星期幾用 on"],
+ ["The shop opens ___ nine in the morning.","at","時刻用 at"],
+ ["Flowers bloom ___ spring.","in","季節用 in"],
+ ["I saw him ___ Christmas Eve.","on","特定某天用 on"],
+ ["He reads ___ bedtime.","at","at bedtime 是固定用法"]
 ];
-
-/* 介系詞：地點 [句子, 正解, 說明] */
 const D_PREP_P = [
- ["The picture is ___ the wall.","on","貼在表面上用 on"],
- ["She lives ___ Taiwan.","in","國家用 in"],
- ["I will meet you ___ the bus stop.","at","某個定點用 at"],
- ["The cat is ___ the sofa. (下面)","under","在下方用 under"],
- ["There is a bridge ___ the river.","over","橫跨上方用 over"],
- ["The children are playing ___ the garden.","in","在花園裡用 in"],
- ["The plane flew ___ the clouds.","above","在上方用 above"],
- ["He is standing ___ the door.","behind","在後面用 behind"],
- ["The keys are ___ my pocket.","in","在裡面用 in"],
- ["We sat ___ the tree.","under","在樹下用 under"],
- ["The book is ___ the table.","on","在桌面上用 on"],
- ["She is waiting ___ the station.","at","定點用 at"],
- ["The ball rolled ___ the bed.","under","在床底下用 under"],
- ["My house is ___ the school and the park.","between","兩者之間用 between"]
+ ["The picture is ___ the wall.","on","貼在表面上用 on"],["She lives ___ Taiwan.","in","國家用 in"],
+ ["I will meet you ___ the bus stop.","at","某個定點用 at"],["The cat is ___ the sofa. (下面)","under","在下方用 under"],
+ ["There is a bridge ___ the river.","over","橫跨上方用 over"],["The children are playing ___ the garden.","in","在花園裡用 in"],
+ ["The plane flew ___ the clouds.","above","在上方用 above"],["He is standing ___ the door.","behind","在後面用 behind"],
+ ["The keys are ___ my pocket.","in","在裡面用 in"],["We sat ___ the tree.","under","在樹下用 under"],
+ ["The book is ___ the table.","on","在桌面上用 on"],["She is waiting ___ the station.","at","定點用 at"],
+ ["The ball rolled ___ the bed.","under","在床底下用 under"],["My house is ___ the school and the park.","between","兩者之間用 between"],
+ ["The milk is ___ the fridge.","in","在裡面用 in"],
+ ["She put a hat ___ her head.","on","接觸表面用 on"],
+ ["We arrived ___ the airport late.","at","定點用 at"],
+ ["The dog ran ___ the fence.","behind","在後面用 behind"],
+ ["A lamp hangs ___ the table.","above","在上方用 above"],
+ ["He hid ___ the curtain.","behind","躲在後面用 behind"],
+ ["The shoes are ___ the chair.","under","在下面用 under"],
+ ["My office is ___ the tenth floor.","on","樓層用 on"],
+ ["They live ___ a small village.","in","村莊用 in"],
+ ["The cat jumped ___ the wall.","over","越過用 over"],
+ ["There is a sofa ___ the two windows.","between","兩者之間用 between"],
+ ["The pen fell ___ the desk.","under","掉到下面用 under"],
+ ["We waited ___ the front door.","at","定點用 at"],
+ ["Clouds are ___ the mountain.","above","在上方用 above"],
+ ["He sat ___ the floor.","on","在地板上用 on"],
+ ["A boat passed ___ the bridge.","under","從下方通過用 under"]
 ];
 
-/* 第三人稱單數動詞加 s：[動詞, 第三人稱形, 說明] */
+/* ---- 第三人稱單數 ---- */
 const D_THIRD = [
- ["play","plays","一般動詞加 s"],["go","goes","字尾 o 加 es"],
- ["watch","watches","字尾 ch 加 es"],["study","studies","子音 + y 去 y 加 ies"],
- ["do","does","字尾 o 加 es"],["fly","flies","子音 + y 去 y 加 ies"],
- ["wash","washes","字尾 sh 加 es"],["carry","carries","子音 + y 去 y 加 ies"],
- ["teach","teaches","字尾 ch 加 es"],["buy","buys","母音 + y 直接加 s"],
- ["fix","fixes","字尾 x 加 es"],["cry","cries","子音 + y 去 y 加 ies"],
- ["miss","misses","字尾 ss 加 es"],["enjoy","enjoys","母音 + y 直接加 s"],
- ["finish","finishes","字尾 sh 加 es"],["say","says","母音 + y 直接加 s"]
+ ["play","plays","一般動詞加 s"],["go","goes","字尾 o 加 es"],["watch","watches","字尾 ch 加 es"],
+ ["study","studies","子音 + y 去 y 加 ies"],["do","does","字尾 o 加 es"],["fly","flies","子音 + y 去 y 加 ies"],
+ ["wash","washes","字尾 sh 加 es"],["carry","carries","子音 + y 去 y 加 ies"],["teach","teaches","字尾 ch 加 es"],
+ ["buy","buys","母音 + y 直接加 s"],["fix","fixes","字尾 x 加 es"],["cry","cries","子音 + y 去 y 加 ies"],
+ ["miss","misses","字尾 ss 加 es"],["enjoy","enjoys","母音 + y 直接加 s"],["finish","finishes","字尾 sh 加 es"],
+ ["say","says","母音 + y 直接加 s"]
 ];
 
+/* ---- 主詞表 [主詞, be, do, 單複數] ---- */
+const D_SUBJ = [
+ ["I","am","do","s"],["You","are","do","p"],["He","is","does","s"],["She","is","does","s"],
+ ["It","is","does","s"],["We","are","do","p"],["They","are","do","p"],["Tom","is","does","s"],
+ ["My sister","is","does","s"],["The dogs","are","do","p"],["The children","are","do","p"],
+ ["My parents","are","do","p"],["This book","is","does","s"],["These books","are","do","p"],
+ ["My shoes","are","do","p"],["The weather","is","does","s"],["Milk","is","does","s"],
+ ["Tom and I","are","do","p"],["Everyone","is","does","s"],["My father","is","does","s"]
+];
+
+/* ---- 人稱代名詞 [主格, 受格, 所有格形容詞, 所有格代名詞] ---- */
+const D_PRON = [
+ ["I","me","my","mine"],["you","you","your","yours"],["he","him","his","his"],
+ ["she","her","her","hers"],["it","it","its","its"],["we","us","our","ours"],["they","them","their","theirs"]
+];
+
+/* ---- 主格代名詞題 [描述, 答案] ---- */
+const D_SUBPRON = [
+ ["Tom is my friend.","He"],["Mary is my sister.","She"],["The book is new.","It"],
+ ["Tom and I are classmates.","We"],["The dogs are hungry.","They"],["You and Kate are tall.","You"],
+ ["My parents are teachers.","They"],["The baby is crying.","It"],["My brother and his friend are late.","They"],
+ ["Anna likes music.","She"],["The weather is cold.","It"],["My cousins live in Japan.","They"],
+ ["My grandfather is kind.","He"],
+ ["The flowers are beautiful.","They"],
+ ["Kate and Sue are friends.","They"],
+ ["My mother and I are busy.","We"],
+ ["The film was long.","It"],
+ ["You and your brother are tall.","You"],
+ ["Peter plays the piano.","He"],
+ ["The teachers are in the office.","They"],
+ ["Sophie is my cousin.","She"],
+ ["The rain stopped.","It"],
+ ["My friends and I play football.","We"],
+ ["That man is a doctor.","He"]
+];
+
+/* ---- 現在分詞 [原形, V-ing, 規則] ---- */
+const D_ING = [
+ ["run","running","短母音 + 子音要重複字尾"],["make","making","去掉 e 再加 ing"],
+ ["sit","sitting","短母音 + 子音要重複字尾"],["write","writing","去掉 e 再加 ing"],
+ ["play","playing","直接加 ing"],["swim","swimming","重複字尾"],["come","coming","去掉 e"],
+ ["study","studying","直接加 ing"],["stop","stopping","重複字尾"],["dance","dancing","去掉 e"],
+ ["read","reading","直接加 ing"],["put","putting","重複字尾"],["take","taking","去掉 e"],
+ ["begin","beginning","重複字尾"],["cry","crying","直接加 ing"],["lie","lying","ie 變 y 再加 ing"],
+ ["shop","shopping","重複字尾"],["ride","riding","去掉 e"],
+ ["draw","drawing","直接加 ing"],
+ ["get","getting","重複字尾"],
+ ["live","living","去掉 e"],
+ ["carry","carrying","直接加 ing"],
+ ["win","winning","重複字尾"],
+ ["close","closing","去掉 e"],
+ ["listen","listening","直接加 ing"],
+ ["cut","cutting","重複字尾"],
+ ["smile","smiling","去掉 e"],
+ ["travel","travelling","重複字尾（英式）"],
+ ["hurry","hurrying","直接加 ing"],
+ ["bake","baking","去掉 e"]
+];
+
+/* ---- 規則過去式 [原形, 過去式, 規則] ---- */
+const D_ED = [
+ ["play","played","直接加 ed"],["stop","stopped","重複字尾再加 ed"],["study","studied","子音 + y 去 y 加 ied"],
+ ["like","liked","字尾有 e 只加 d"],["want","wanted","直接加 ed"],["carry","carried","子音 + y 去 y 加 ied"],
+ ["plan","planned","重複字尾再加 ed"],["watch","watched","直接加 ed"],["arrive","arrived","字尾有 e 只加 d"],
+ ["try","tried","子音 + y 去 y 加 ied"],["clean","cleaned","直接加 ed"],["drop","dropped","重複字尾再加 ed"],
+ ["enjoy","enjoyed","母音 + y 直接加 ed"],["close","closed","字尾有 e 只加 d"],
+ ["help","helped","直接加 ed"],
+ ["shop","shopped","重複字尾再加 ed"],
+ ["hurry","hurried","子音 + y 去 y 加 ied"],
+ ["dance","danced","字尾有 e 只加 d"],
+ ["look","looked","直接加 ed"],
+ ["travel","travelled","重複字尾（英式）"],
+ ["copy","copied","子音 + y 去 y 加 ied"],
+ ["move","moved","字尾有 e 只加 d"],
+ ["open","opened","直接加 ed"],
+ ["stay","stayed","母音 + y 直接加 ed"]
+];
+
+/* ---- 副詞 [形容詞, 副詞, 規則] ---- */
+const D_ADV = [
+ ["quick","quickly","直接加 ly"],["happy","happily","y 變 i 加 ly"],["careful","carefully","直接加 ly"],
+ ["good","well","不規則：good 的副詞是 well"],["fast","fast","fast 本身就是副詞"],["easy","easily","y 變 i 加 ly"],
+ ["slow","slowly","直接加 ly"],["angry","angrily","y 變 i 加 ly"],["late","late","late 本身就是副詞"],
+ ["hard","hard","hard 本身就是副詞"],["beautiful","beautifully","直接加 ly"],["quiet","quietly","直接加 ly"],
+ ["simple","simply","le 變 ly"],["heavy","heavily","y 變 i 加 ly"],["polite","politely","直接加 ly"],
+ ["terrible","terribly","le 變 ly"],["loud","loudly","直接加 ly"],["safe","safely","直接加 ly"],
+ ["clear","clearly","直接加 ly"],
+ ["bad","badly","直接加 ly"],
+ ["lucky","luckily","y 變 i 加 ly"],
+ ["perfect","perfectly","直接加 ly"],
+ ["gentle","gently","le 變 ly"],
+ ["busy","busily","y 變 i 加 ly"]
+];
+
+/* ---- 情態助動詞 [句子, 答案, 說明] ---- */
+const D_MODAL = [
+ ["You ___ wear a helmet when you cycle.","should","給建議用 should"],
+ ["___ I borrow your pen, please?","May","禮貌請求用 May I"],
+ ["You ___ stop at a red light.","must","規定必須做用 must"],
+ ["She ___ swim when she was four.","could","過去的能力用 could"],
+ ["It ___ rain later, so take an umbrella.","might","不確定的可能用 might"],
+ ["___ you play the guitar?","Can","問能力用 Can"],
+ ["You look tired. You ___ go to bed early.","should","建議用 should"],
+ ["We ___ not be late for school.","must","must not 表示不可以"],
+ ["___ you help me, please?","Could","禮貌請求用 Could you"],
+ ["Fish ___ live without water.","cannot","魚沒有水不能活"],
+ ["Students ___ run in the corridor.","mustn't","禁止用 mustn't"],
+ ["I ___ speak English and Japanese.","can","講能力用 can"],
+ ["You ___ finish it today; tomorrow is fine.","needn't","不必做用 needn't"],
+ ["___ I open the window?","Shall","徵詢意見用 Shall I"],
+ ["You ___ eat more vegetables.","should","建議用 should"],
+ ["___ I use your phone?","May","請求用 May I"],
+ ["Babies ___ not walk.","cannot","不能做某事用 cannot"],
+ ["We ___ be quiet in the library.","must","規定用 must"],
+ ["He ___ read when he was three.","could","過去的能力用 could"],
+ ["It ___ snow tonight.","might","不確定用 might"],
+ ["___ you close the door, please?","Could","禮貌請求用 Could"],
+ ["I ___ swim very well.","can","能力用 can"],
+ ["You ___ bring an umbrella; it's sunny.","needn't","不必用 needn't"],
+ ["Drivers ___ stop at red lights.","must","規定用 must"],
+ ["___ we go to the park?","Shall","提議用 Shall we"],
+ ["She ___ be at home; her car is here.","might","推測用 might"],
+ ["___ you speak Japanese?","Can","問能力用 Can"],
+ ["We ___ arrive before six.","should","建議用 should"],
+ ["Students ___ use phones in class.","mustn't","禁止用 mustn't"],
+ ["___ I sit here?","May","請求用 May I"]
+];
+
+/* ---- 連接詞 [句子, 答案, 說明] ---- */
+const D_CONJ = [
+ ["I was tired, ___ I went to bed early.","so","前因後果用 so"],
+ ["He is young, ___ he is very clever.","but","前後相反用 but"],
+ ["Would you like tea ___ coffee?","or","二選一用 or"],
+ ["We stayed at home ___ it was raining.","because","說明原因用 because"],
+ ["___ you hurry, you will catch the bus.","If","假設用 If"],
+ ["She sings ___ she dances very well.","and","兩件都會用 and"],
+ ["I will call you ___ I arrive.","when","表示時間點用 when"],
+ ["He ran fast, ___ he did not win.","but","結果相反用 but"],
+ ["___ it was cold, we went swimming.","Although","雖然…但還是，用 Although"],
+ ["Wait here ___ I come back.","until","一直到某時用 until"],
+ ["She was hungry, ___ she made a sandwich.","so","結果用 so"],
+ ["I like maths ___ science.","and","並列用 and"],
+ ["We can walk ___ take the bus.","or","選擇用 or"],
+ ["He was late ___ the train broke down.","because","原因用 because"],
+ ["Study hard, ___ you will pass.","and","祈使句 + and 表示「就會…」"],
+ ["Hurry up, ___ you will be late.","or","祈使句 + or 表示「否則」"],
+ ["I stayed inside ___ it was too hot.","because","原因用 because"],
+ ["She was tired ___ happy.","but","相反用 but"],
+ ["Turn off the light ___ you leave.","when","時間點用 when"],
+ ["___ you finish early, call me.","If","假設用 If"],
+ ["He likes football ___ basketball.","and","並列用 and"],
+ ["We waited ___ the rain stopped.","until","一直到某時用 until"],
+ ["___ she is only six, she can read well.","Although","雖然用 Although"],
+ ["It was dark, ___ we went home.","so","結果用 so"],
+ ["Do you want juice ___ milk?","or","二選一用 or"],
+ ["I could not sleep ___ the noise was loud.","because","原因用 because"],
+ ["Wash your hands ___ you eat.","before","先後順序用 before"],
+ ["He shouted ___ nobody heard him.","but","相反用 but"],
+ ["Stay here ___ I get back.","until","直到用 until"],
+ ["___ it rains, we will stay at home.","If","假設用 If"]
+];
+
+/* ---- 主詞動詞一致 [主詞, 動詞, 說明] ---- */
+const D_AGREE = [
+ ["Everyone","is","Everyone 當單數"],["My family","has","family 當一個整體"],
+ ["The news","is","news 字尾有 s 但是單數"],["Ten dollars","is","金額當一個整體"],
+ ["My trousers","are","trousers 永遠是複數"],["Mathematics","is","學科名稱當單數"],
+ ["Both of my parents","are","Both 是複數"],["Each student","has","Each + 單數"],
+ ["The team","is","team 當一個整體"],["There","are","後面接複數名詞時用 are"],
+ ["Neither of the boys","is","Neither of 當單數"],["The people","are","people 是複數"],
+ ["Everybody","is","Everybody 當單數"],["My glasses","are","glasses 是複數"],
+ ["Nobody","is","Nobody 當單數"],
+ ["The police","are","police 當複數"],
+ ["Two hours","is","時間長度當一個整體"],
+ ["My scissors","are","scissors 是複數"],
+ ["Physics","is","學科名稱當單數"],
+ ["All the students","are","All the students 是複數"],
+ ["One of my friends","is","One of 當單數"],
+ ["The water","is","water 不可數"],
+ ["My clothes","are","clothes 永遠是複數"],
+ ["Somebody","is","Somebody 當單數"],
+ ["These pictures","are","These pictures 複數"],
+ ["The furniture","is","furniture 不可數"],
+ ["Half of the cake","is","Half of + 單數"],
+ ["Most of the children","are","Most of + 複數"],
+ ["A pair of shoes","is","A pair 當單數"],
+ ["The information","is","information 不可數"]
+];
+
+/* ---- 標點與大小寫 [正確句, 錯誤句1, 錯誤句2, 說明] ---- */
+const D_PUNCT = [
+ ["Where do you live?","where do you live?","Where do you live.","句首大寫，問句用問號"],
+ ["I like apples, bananas and pears.","I like apples bananas and pears.","I like, apples bananas and pears.","列舉用逗號分開"],
+ ["My name is Tom.","my name is tom.","My Name is tom.","句首和人名要大寫"],
+ ["What a beautiful day!","what a beautiful day","What a beautiful day?","感嘆句用驚嘆號"],
+ ["I live in Taipei.","i live in taipei.","I live in taipei.","地名和句首要大寫"],
+ ["It's raining today.","Its raining today.","Its' raining today.","It is 縮寫成 It's"],
+ ["This is Ann's book.","This is Anns book.","This is Anns' book.","單數所有格用 's"],
+ ["Do you like it?","Do you like it.","do you like it?","問句用問號，句首大寫"],
+ ["I was born on Monday.","I was born on monday.","i was born on Monday.","星期名稱要大寫"],
+ ["She said, \"Hello.\"","She said \"hello\"","she said, hello.","引述用引號，句首大寫"],
+ ["We study English and Chinese.","We study english and chinese.","we study English and Chinese.","語言名稱要大寫"],
+ ["Don't touch that!","Dont touch that!","Don't touch that","縮寫要有撇號，感嘆句用驚嘆號"],
+ ["He lives in New York.","he lives in new york.","He lives in new York.","地名和句首要大寫"],
+ ["Can you swim?","Can you swim","can you swim?","問句用問號，句首大寫"],
+ ["I have a cat, a dog and a bird.","I have a cat a dog and a bird.","i have a cat, a dog and a bird.","列舉用逗號，句首大寫"],
+ ["We go to school in September.","We go to school in september.","we go to school in September.","月份要大寫"],
+ ["How old are you?","How old are you.","how old are you?","問句用問號，句首大寫"],
+ ["She speaks Chinese and English.","She speaks chinese and english.","she speaks Chinese and English.","語言名稱要大寫"],
+ ["Today is Tuesday.","Today is tuesday.","today is Tuesday.","星期名稱要大寫"],
+ ["Where are my books?","Where are my books.","where are my books?","問句用問號"],
+ ["It's a beautiful day.","Its a beautiful day.","it's a beautiful day.","It is 縮寫成 It's，句首大寫"],
+ ["We visited Japan last year.","We visited japan last year.","we visited Japan last year.","國名要大寫"],
+ ["My friend's name is Amy.","My friends name is amy.","my friend's name is Amy.","所有格用 's，句首大寫"],
+ ["Look out!","look out","Look out.","警告用驚嘆號，句首大寫"]
+];
+
+/* ---- 未來式 [句子, 答案, 說明] ---- */
+const D_FUT = [
+ ["Look at those clouds! It ___ rain.","is going to","有眼前的證據用 be going to"],
+ ["I think she ___ like this present.","will","I think 表示推測，用 will"],
+ ["We ___ visit Grandma next weekend.","are going to","已經計畫好用 be going to"],
+ ["___ you help me, please?","Will","請求幫忙用 Will you"],
+ ["The train ___ arrive at six o'clock.","will","未來的時刻用 will"],
+ ["I ___ be a doctor when I grow up.","will","講長大以後用 will"],
+ ["What ___ you do next summer?","will","next summer 是未來"],
+ ["She ___ going to buy a new bike.","is","She 用 is going to"],
+ ["They ___ not come tomorrow.","will","tomorrow 用 will not"],
+ ["Careful! You ___ fall!","are going to","眼前快發生的事用 be going to"],
+ ["He ___ be ten next month.","will","下個月用 will"],
+ ["We ___ going to have a party.","are","We 用 are going to"],
+ ["I ___ visit my aunt next week.","will","next week 是未來"],
+ ["She ___ going to study tonight.","is","She 用 is going to"],
+ ["Don't worry, I ___ help you.","will","當下決定幫忙用 will"],
+ ["They ___ going to move house.","are","They 用 are going to"],
+ ["The shop ___ open at nine tomorrow.","will","未來的時刻用 will"],
+ ["We ___ not forget this day.","will","未來否定用 will not"],
+ ["Look! The glass ___ fall!","is going to","眼前快發生用 be going to"],
+ ["My sister ___ be twelve next month.","will","下個月用 will"],
+ ["I ___ going to buy a present.","am","I 用 am going to"],
+ ["___ they come to the party?","Will","未來疑問用 Will"],
+ ["It ___ be sunny at the weekend.","will","推測未來用 will"],
+ ["He ___ going to be a pilot.","is","He 用 is going to"],
+ ["The baby ___ going to cry.","is","眼前快發生用 be going to"],
+ ["You ___ like this film.","will","推測用 will"],
+ ["What time ___ the bus leave tomorrow?","will","未來的時刻用 will"],
+ ["I ___ going to wash the car.","am","I 用 am going to"],
+ ["She ___ call you later.","will","稍後用 will"]
+];
+
+/* ---- have got / There is [句子, 答案, 說明] ---- */
+const D_HAVE = [
+ ["___ there any milk in the fridge?","Is","milk 不可數，用 Is there"],
+ ["There ___ five children in the room.","are","five children 複數"],
+ ["She ___ got a new bicycle.","has","She 用 has got"],
+ ["___ you got any brothers?","Have","you 用 Have you got"],
+ ["There ___ not any bread left.","is","bread 不可數"],
+ ["They ___ got two cats.","have","They 用 have got"],
+ ["There ___ a park near my house.","is","a park 單數"],
+ ["He ___ got long hair.","has","He 用 has got"],
+ ["How many eggs ___ there in the box?","are","How many + 複數"],
+ ["I ___ got a headache today.","have","I 用 have got"],
+ ["There ___ some water in the glass.","is","water 不可數"],
+ ["___ there any apples left?","Are","apples 複數用 Are there"],
+ ["My brother ___ got a bike.","has","My brother 單數用 has"],
+ ["There ___ many stars in the sky.","are","many stars 複數"],
+ ["She ___ got blue eyes.","has","She 用 has got"],
+ ["We ___ got a new teacher.","have","We 用 have got"],
+ ["There ___ a cat under the car.","is","a cat 單數"],
+ ["There ___ two chairs here.","are","two chairs 複數"],
+ ["___ your father got a car?","Has","your father 單數用 Has"],
+ ["There ___ no milk left.","is","milk 不可數"],
+ ["They ___ not got any money.","have","They 用 have not got"],
+ ["There ___ some birds on the roof.","are","some birds 複數"],
+ ["My friends ___ got bikes.","have","My friends 複數用 have"],
+ ["There ___ a lot of noise outside.","is","noise 不可數"],
+ ["___ there a library near here?","Is","a library 單數"],
+ ["She ___ not got a sister.","has","She 用 has not got"],
+ ["There ___ four seasons in a year.","are","four seasons 複數"],
+ ["___ you got a pen?","Have","you 用 Have you got"],
+ ["There ___ some bread on the table.","is","bread 不可數"],
+ ["He ___ got two dogs.","has","He 用 has got"]
+];
+
+/* ---- 形容詞 [句子, 答案, 錯誤1, 錯誤2, 說明] ---- */
+const D_ADJ = [
+ ["She has a ___ voice.","beautiful","beautifully","beauty","修飾名詞用形容詞"],
+ ["The soup tastes ___.","delicious","deliciously","deliciousness","感官動詞後面接形容詞"],
+ ["I am ___ of spiders.","afraid","afraidly","fear","be afraid of 是固定用法"],
+ ["This film is very ___.","boring","bored","bore","形容事物用 -ing"],
+ ["I feel ___ after the long trip.","tired","tiring","tire","形容人的感受用 -ed"],
+ ["The box is too ___ to carry.","heavy","heavily","heaviness","too + 形容詞"],
+ ["He is an ___ boy.","honest","honestly","honesty","修飾名詞用形容詞"],
+ ["The weather is getting ___.","warm","warmly","warmth","get + 形容詞"],
+ ["The story was very ___.","exciting","excited","excite","形容事物用 -ing"],
+ ["She looks ___ today.","happy","happily","happiness","look + 形容詞"],
+ ["This chair is very ___.","comfortable","comfortably","comfort","be + 形容詞"],
+ ["I was ___ by the noise.","surprised","surprising","surprise","人的感受用 -ed"],
+ ["The music sounds ___.","lovely","lovelily","love","sound + 形容詞"],
+ ["He felt ___ after the race.","exhausted","exhausting","exhaust","人的感受用 -ed"],
+ ["That was a ___ idea.","wonderful","wonderfully","wonder","修飾名詞用形容詞"],
+ ["The room smells ___.","fresh","freshly","freshness","smell + 形容詞"],
+ ["The game was ___.","interesting","interested","interest","形容事物用 -ing"],
+ ["I am ___ in science.","interested","interesting","interest","人的感受用 -ed"],
+ ["He seems ___ today.","angry","angrily","anger","seem + 形容詞"],
+ ["This bag is too ___.","expensive","expensively","expense","too + 形容詞"],
+ ["The children were ___ about the trip.","excited","exciting","excite","人的感受用 -ed"],
+ ["It was a ___ journey.","tiring","tired","tire","形容事物用 -ing"],
+ ["Your room looks ___.","clean","cleanly","cleaning","look + 形容詞"],
+ ["He is a ___ runner.","fast","fastly","fasting","修飾名詞用形容詞"],
+ ["She was ___ to hear the news.","glad","gladly","gladness","be + 形容詞"],
+ ["The film was ___.","amazing","amazed","amaze","形容事物用 -ing"]
+];
+
+/* ---- 出題 ---- */
 function genBasicExtra(){
   const out = [];
   function add(part, q, right, wrongs, e, type){
@@ -400,55 +795,239 @@ function genBasicExtra(){
     const m = mixOpts(right, wrongs);
     out.push({ part:part, q:q, type:"mcq", o:m.o, a:m.a, e:e });
   }
-  /* 名詞單複數 */
-  const P2 = "Basic Part 2｜名詞單複數 Plural Nouns";
+  const P = {
+    n1:"Basic Part 1｜名詞 Nouns", n2:"Basic Part 2｜名詞單複數 Plural Nouns",
+    n3:"Basic Part 3｜冠詞 Articles", n4:"Basic Part 4｜主格代名詞 Subject Pronouns",
+    n5:"Basic Part 5｜受格與所有格 Object & Possessive", n6:"Basic Part 6｜be 動詞 am / is / are",
+    n7:"Basic Part 7｜be 動詞的否定與疑問", n8:"Basic Part 8｜現在簡單式 Present Simple",
+    n9:"Basic Part 9｜助動詞 do / does", n10:"Basic Part 10｜現在進行式 Present Continuous",
+    n11:"Basic Part 11｜過去簡單式 Past Simple", n12:"Basic Part 12｜不規則動詞過去式 Irregular Verbs",
+    n13:"Basic Part 13｜未來式 Future Tense", n14:"Basic Part 14｜情態助動詞 Modal Verbs",
+    n15:"Basic Part 15｜have got 與 There is / There are", n16:"Basic Part 16｜形容詞 Adjectives",
+    n17:"Basic Part 17｜比較級與最高級 Comparatives", n18:"Basic Part 18｜副詞 Adverbs",
+    n19:"Basic Part 19｜介系詞：地點 Place", n20:"Basic Part 20｜介系詞：時間 Time",
+    n21:"Basic Part 21｜連接詞 Conjunctions", n22:"Basic Part 22｜主詞動詞一致 Subject-Verb Agreement",
+    n23:"Basic Part 23｜主動與被動語態 Active & Passive", n24:"Basic Part 24｜標點符號 Punctuation",
+    n25:"Basic Part 25｜綜合複習 Review"
+  };
+
+  /* 1 名詞 */
+  const NONNOUN = W_VERB.concat(W_ADJ).concat(W_ADV.filter(function(x){ return /^[a-z]+$/.test(x); }));
+  W_NOUN.forEach(function(n){
+    const w2 = [];
+    shuffle(NONNOUN).forEach(function(x){ if (w2.length < 2 && w2.indexOf(x) < 0 && x !== n) w2.push(x); });
+    add(P.n1, "Which word is a noun?", n, w2, n + " 是東西或人的名字，屬於名詞。");
+  });
+  shuffle(W_VERB).slice(0, 6).forEach(function(v){
+    add(P.n1, "Which word is NOT a noun?", v, shuffle(W_NOUN).slice(0, 2), v + " 是動詞，其他兩個是名詞。");
+  });
+  shuffle(W_ADJ).slice(0, 6).forEach(function(v){
+    add(P.n1, "Which word is NOT a noun?", v, shuffle(W_NOUN).slice(0, 2), v + " 是形容詞，其他兩個是名詞。");
+  });
+
+  /* 2 名詞單複數 */
   D_PLURAL.forEach(function(r){
-    const wrong = shuffle(D_PLURAL.filter(function(x){ return x[1] !== r[1]; }))
-                    .slice(0, 2).map(function(x){ return x[1]; });
-    add(P2, "one " + r[0] + " → three ___", r[1], wrong, r[0] + " 的複數是 " + r[1] + "（" + r[2] + "）。");
-    if (Math.random() < 0.4)
-      add(P2, "plural of '" + r[0] + "' （打字作答）", r[1], [], r[0] + " → " + r[1] + "（" + r[2] + "）。", "input");
+    add(P.n2, "one " + r[0] + " → three ___", r[1],
+        shuffle(D_PLURAL.filter(function(x){ return x[1] !== r[1]; })).slice(0, 2).map(function(x){ return x[1]; }),
+        r[0] + " 的複數是 " + r[1] + "（" + r[2] + "）。");
+    if (Math.random() < 0.5)
+      add(P.n2, "plural of '" + r[0] + "' （打字作答）", r[1], [], r[0] + " → " + r[1] + "（" + r[2] + "）。", "input");
   });
-  /* 不規則動詞 */
-  const P12 = "Basic Part 12｜不規則動詞過去式 Irregular Verbs";
-  D_IRREG.forEach(function(r){
-    const wrong = shuffle(D_IRREG.filter(function(x){ return x[1] !== r[1]; }))
-                    .slice(0, 2).map(function(x){ return x[1]; });
-    add(P12, "past tense of '" + r[0] + "'", r[1], wrong, r[0] + " → " + r[1] + "（過去分詞 " + r[2] + "）。");
-    if (Math.random() < 0.4)
-      add(P12, "past participle of '" + r[0] + "' （打字作答）", r[2], [],
-          r[0] + " 的過去分詞是 " + r[2] + "。", "input");
-  });
-  /* 冠詞 */
-  const P3 = "Basic Part 3｜冠詞 Articles";
+
+  /* 3 冠詞 */
   D_ARTICLE.forEach(function(r){
-    add(P3, "This is ___ " + r[0] + ".", r[1], r[1] === "a" ? ["an", "the"] : ["a", "the"],
-        r[0] + "：" + r[2] + "。");
+    add(P.n3, "This is ___ " + r[0] + ".", r[1], r[1] === "a" ? ["an", "the"] : ["a", "the"], r[0] + "：" + r[2] + "。");
+    if (Math.random() < 0.5)
+      add(P.n3, "I saw ___ " + r[0] + " yesterday.", r[1], r[1] === "a" ? ["an", "the"] : ["a", "the"], r[2] + "。");
   });
-  /* 比較級最高級 */
-  const P17 = "Basic Part 17｜比較級與最高級 Comparatives";
+
+  /* 4 主格代名詞 */
+  D_SUBPRON.forEach(function(r){
+    const wrong = shuffle(["He","She","It","We","They","You","I"].filter(function(x){ return x !== r[1]; })).slice(0, 2);
+    add(P.n4, r[0] + " ___ is / are here.", r[1], wrong, r[0] + " 要用主格代名詞 " + r[1] + "。");
+  });
+  D_SUBPRON.forEach(function(r){
+    const wrong = shuffle(["He","She","It","We","They","You","I"].filter(function(x){ return x !== r[1]; })).slice(0, 2);
+    add(P.n4, r[0] + " ___ live near the park.", r[1], wrong, r[0] + " 用主格代名詞 " + r[1] + "。");
+  });
+  D_SUBPRON.slice(0, 8).forEach(function(r){
+    const wrong = shuffle(["He","She","It","We","They","You","I"].filter(function(x){ return x !== r[1]; })).slice(0, 2);
+    add(P.n4, "Replace the words: " + r[0], r[1], wrong, "用 " + r[1] + " 代替「" + r[0].replace(/ (is|are|likes|live).*$/, "") + "」。");
+  });
+
+  /* 5 受格與所有格 */
+  D_PRON.forEach(function(r){
+    add(P.n5, "Give the book to ___. (" + r[0] + ")", r[1], [r[0], r[2]], "介系詞後面用受格 " + r[1] + "。");
+    add(P.n5, "This is ___ bag. (" + r[0] + ")", r[2], [r[1], r[3]], "後面有名詞，用所有格 " + r[2] + "。");
+    add(P.n5, "That bag is ___. (" + r[0] + ")", r[3], [r[1], r[2]], "後面沒有名詞，用所有格代名詞 " + r[3] + "。");
+    add(P.n5, "Can you help ___? (" + r[0] + ")", r[1], [r[0], r[2]], "動詞後面用受格 " + r[1] + "。");
+    add(P.n5, "___ friends are here. (" + r[0] + ")", r[2], [r[1], r[3]], "後面有名詞 friends，用所有格 " + r[2] + "。");
+    add(P.n5, "The teacher called ___. (" + r[0] + ")", r[1], [r[0], r[2]], "動詞後面用受格 " + r[1] + "。");
+    add(P.n5, "These books are ___. (" + r[0] + ")", r[3], [r[1], r[2]], "後面沒有名詞，用所有格代名詞 " + r[3] + "。");
+  });
+
+  /* 6 be 動詞 */
+  D_SUBJ.forEach(function(r){
+    add(P.n6, r[0] + " ___ very happy today.", r[1],
+        shuffle(["am","is","are"].filter(function(x){ return x !== r[1]; })).slice(0, 2),
+        r[0] + " 要配 " + r[1] + "。");
+  });
+  D_SUBJ.forEach(function(r){
+    add(P.n6, r[0] + " ___ in the classroom.", r[1],
+        shuffle(["am","is","are"].filter(function(x){ return x !== r[1]; })).slice(0, 2),
+        r[0] + " 要配 " + r[1] + "。");
+  });
+
+  /* 7 be 動詞否定與疑問 */
+  D_SUBJ.forEach(function(r){
+    const cap = r[1].charAt(0).toUpperCase() + r[1].slice(1);
+    add(P.n7, "___ " + r[0].toLowerCase() + " ready?", cap,
+        shuffle(["Am","Is","Are"].filter(function(x){ return x !== cap; })).slice(0, 2),
+        r[0] + " 的疑問句用 " + cap + "。");
+    add(P.n7, r[0] + " ___ not at home now.", r[1],
+          shuffle(["am","is","are"].filter(function(x){ return x !== r[1]; })).slice(0, 2),
+          r[0] + " 的否定用 " + r[1] + " not。");
+  });
+
+  /* 8 現在簡單式 */
+  D_THIRD.forEach(function(r){
+    add(P.n8, "He ___ every day. (" + r[0] + ")", r[1], [r[0], r[0] + "ing"], r[2] + "：" + r[0] + " → " + r[1] + "。");
+    add(P.n8, "third person form of '" + r[0] + "' （打字作答）", r[1], [], r[0] + " → " + r[1] + "（" + r[2] + "）。", "input");
+  });
+  shuffle(D_SUBJ).slice(0, 12).forEach(function(r){
+    const v = r[3] === "s" && r[0] !== "I" && r[0] !== "You" ? "works" : "work";
+    add(P.n8, r[0] + " ___ very hard.", v, [v === "works" ? "work" : "works", "working"],
+        r[0] + " 要配 " + v + "。");
+  });
+
+  /* 9 do / does */
+  D_SUBJ.forEach(function(r){
+    const cap = r[2].charAt(0).toUpperCase() + r[2].slice(1);
+    add(P.n9, "___ " + r[0].toLowerCase() + " like music?", cap, [cap === "Do" ? "Does" : "Do", "Is"],
+        r[0] + " 用 " + cap + "。");
+    add(P.n9, r[0] + " ___ not eat meat.", r[2], [r[2] === "do" ? "does" : "do", "is"],
+          r[0] + " 的否定用 " + r[2] + " not。");
+  });
+
+  /* 10 現在進行式 */
+  D_ING.forEach(function(r){
+    add(P.n10, "Look! She is ___ now. (" + r[0] + ")", r[1], [r[0], r[0] + "ing" === r[1] ? r[0] + "ed" : r[0] + "ing"],
+        r[0] + " → " + r[1] + "（" + r[2] + "）。");
+    add(P.n10, "V-ing form of '" + r[0] + "' （打字作答）", r[1], [], r[0] + " → " + r[1] + "（" + r[2] + "）。", "input");
+  });
+
+  /* 11 過去簡單式 */
+  D_ED.forEach(function(r){
+    add(P.n11, "Yesterday I ___ . (" + r[0] + ")", r[1], [r[0], r[0] + "d"],
+        r[0] + " → " + r[1] + "（" + r[2] + "）。");
+    add(P.n11, "past tense of '" + r[0] + "' （打字作答）", r[1], [], r[0] + " → " + r[1] + "（" + r[2] + "）。", "input");
+  });
+  shuffle(D_IRREG).slice(0, 12).forEach(function(r){
+    add(P.n11, "Last week we ___ . (" + r[0] + ")", r[1],
+        shuffle(D_IRREG.filter(function(x){ return x[1] !== r[1]; })).slice(0, 2).map(function(x){ return x[1]; }),
+        r[0] + " 的過去式是 " + r[1] + "。");
+  });
+
+  /* 12 不規則動詞 */
+  D_IRREG.forEach(function(r){
+    add(P.n12, "past tense of '" + r[0] + "'", r[1],
+        shuffle(D_IRREG.filter(function(x){ return x[1] !== r[1]; })).slice(0, 2).map(function(x){ return x[1]; }),
+        r[0] + " → " + r[1] + "（過去分詞 " + r[2] + "）。");
+    if (Math.random() < 0.5)
+      add(P.n12, "past participle of '" + r[0] + "' （打字作答）", r[2], [], r[0] + " 的過去分詞是 " + r[2] + "。", "input");
+  });
+
+  /* 13 未來式 */
+  D_FUT.forEach(function(r){
+    const pool = ["will","is going to","are going to","was","did","is"];
+    add(P.n13, r[0], r[1], shuffle(pool.filter(function(x){ return x !== r[1]; })).slice(0, 2), r[2] + "。");
+    if (Math.random() < 0.6) add(P.n13, r[0] + "　（打字作答）", r[1], [], r[2] + "。", "input");
+  });
+
+  /* 14 情態助動詞 */
+  D_MODAL.forEach(function(r){
+    const pool = ["can","could","may","must","should","might","Can","Could","May","Shall","mustn't","cannot","needn't","Will"];
+    add(P.n14, r[0], r[1], shuffle(pool.filter(function(x){ return x !== r[1]; })).slice(0, 2), r[2] + "。");
+    if (Math.random() < 0.6) add(P.n14, r[0] + "　（打字作答）", r[1], [], r[2] + "。", "input");
+  });
+
+  /* 15 have got / There is */
+  D_HAVE.forEach(function(r){
+    const pool = ["is","are","has","have","Is","Are","Have","Has"];
+    add(P.n15, r[0], r[1], shuffle(pool.filter(function(x){ return x !== r[1]; })).slice(0, 2), r[2] + "。");
+    if (Math.random() < 0.6) add(P.n15, r[0] + "　（打字作答）", r[1], [], r[2] + "。", "input");
+  });
+
+  /* 16 形容詞 */
+  D_ADJ.forEach(function(r){
+    add(P.n16, r[0], r[1], [r[2], r[3]], r[4] + "。");
+    if (Math.random() < 0.6) add(P.n16, r[0] + "　（打字作答）", r[1], [], r[4] + "。", "input");
+  });
+
+  /* 17 比較級最高級 */
   D_COMP.forEach(function(r){
-    add(P17, "This one is ___ than that one. (" + r[0] + ")", r[1], [r[0], r[2]],
+    add(P.n17, "This one is ___ than that one. (" + r[0] + ")", r[1], [r[0], r[2]],
         r[0] + " 的比較級是 " + r[1] + "，最高級是 " + r[2] + "。");
-    add(P17, "It is the ___ in the class. (" + r[0] + ")", r[2], [r[0], r[1]],
+    add(P.n17, "It is the ___ in the class. (" + r[0] + ")", r[2], [r[0], r[1]],
         r[0] + " 的最高級是 " + r[2] + "。");
   });
-  /* 介系詞 */
-  const P20 = "Basic Part 20｜介系詞：時間 Time";
-  D_PREP_T.forEach(function(r){
-    add(P20, r[0], r[1], shuffle(["in", "on", "at"].filter(function(x){ return x !== r[1]; })).slice(0, 2),
-        r[2] + "。");
+
+  /* 18 副詞 */
+  D_ADV.forEach(function(r){
+    add(P.n18, "He did it ___ . (" + r[0] + ")", r[1], [r[0], r[0] + "ness"], r[2] + "：" + r[0] + " → " + r[1] + "。");
+    add(P.n18, "adverb of '" + r[0] + "' （打字作答）", r[1], [], r[0] + " → " + r[1] + "（" + r[2] + "）。", "input");
   });
-  const P19 = "Basic Part 19｜介系詞：地點 Place";
-  const PP = ["in", "on", "at", "under", "over", "above", "behind", "between"];
+
+  /* 19 / 20 介系詞 */
+  const PP = ["in","on","at","under","over","above","behind","between"];
   D_PREP_P.forEach(function(r){
-    add(P19, r[0], r[1], shuffle(PP.filter(function(x){ return x !== r[1]; })).slice(0, 2), r[2] + "。");
+    add(P.n19, r[0], r[1], shuffle(PP.filter(function(x){ return x !== r[1]; })).slice(0, 2), r[2] + "。");
+    if (Math.random() < 0.6) add(P.n19, r[0] + "　（打字作答）", r[1], [], r[2] + "。", "input");
   });
-  /* 現在簡單式第三人稱 */
-  const P8 = "Basic Part 8｜現在簡單式 Present Simple";
-  D_THIRD.forEach(function(r){
-    add(P8, "He ___ every day. (" + r[0] + ")", r[1],
-        [r[0], r[0] + "ing"], r[2] + "：" + r[0] + " → " + r[1] + "。");
+  D_PREP_T.forEach(function(r){
+    add(P.n20, r[0], r[1], shuffle(["in","on","at"].filter(function(x){ return x !== r[1]; })).slice(0, 2), r[2] + "。");
+    if (Math.random() < 0.6) add(P.n20, r[0] + "　（打字作答）", r[1], [], r[2] + "。", "input");
+  });
+
+  /* 21 連接詞 */
+  D_CONJ.forEach(function(r){
+    const pool = ["and","but","or","so","because","If","when","Although","until"];
+    add(P.n21, r[0], r[1], shuffle(pool.filter(function(x){ return x !== r[1]; })).slice(0, 2), r[2] + "。");
+    if (Math.random() < 0.6) add(P.n21, r[0] + "　（打字作答）", r[1], [], r[2] + "。", "input");
+  });
+
+  /* 22 主詞動詞一致 */
+  D_AGREE.forEach(function(r){
+    add(P.n22, r[0] + " ___ here.", r[1],
+        shuffle(["is","are","has","have","was","were"].filter(function(x){ return x !== r[1]; })).slice(0, 2),
+        r[2] + "，所以用 " + r[1] + "。");
+    add(P.n22, r[0] + " ___ ready now.", r[1],
+        shuffle(["is","are","has","have","was","were"].filter(function(x){ return x !== r[1]; })).slice(0, 2),
+        r[2] + "，所以用 " + r[1] + "。");
+  });
+
+  /* 23 主動與被動 */
+  D_IRREG.forEach(function(r){
+    add(P.n23, "The work ___ by my brother. (" + r[0] + ", passive)", "was " + r[2],
+        ["was " + r[1], "were " + r[0]],
+        "被動語態用 was + 過去分詞：was " + r[2] + "。");
+    if (Math.random() < 0.6)
+      add(P.n23, "past participle of '" + r[0] + "' （被動要用，打字作答）", r[2], [],
+          r[0] + " 的過去分詞是 " + r[2] + "。", "input");
+  });
+
+  /* 24 標點符號 */
+  D_PUNCT.forEach(function(r){
+    add(P.n24, "Which sentence is correct?", r[0], [r[1], r[2]], r[3] + "。");
+    add(P.n24, "Which sentence is WRONG?", r[1], [r[0], r[2]], r[3] + "。");
+  });
+
+  /* 25 綜合複習：從上面各單元隨機抽，改標成複習 */
+  const pool = shuffle(out).slice(0, 60);
+  pool.forEach(function(it){
+    const c = { part:P.n25, q:it.q, type:it.type, e:it.e };
+    if (it.type === "input") c.ans = it.ans.slice(); else { c.o = it.o.slice(); c.a = it.a; }
+    out.push(c);
   });
   return out;
 }
@@ -472,8 +1051,20 @@ function pickWrong(pool, right, n, f){
   return out;
 }
 /* 把正解和干擾項洗牌，回傳 {o, a} */
+const FILLERS = ["the","a","an","of","to","for","with","and","is","was","do","did","my","me","it"];
 function mixOpts(right, wrongs){
-  const all = shuffle([right].concat(wrongs));
+  /* 去掉和正解相同或彼此重複的干擾項（例如 you/you、his/his） */
+  const uniq = [];
+  (wrongs || []).forEach(function(x){
+    if (x !== right && uniq.indexOf(x) < 0) uniq.push(x);
+  });
+  /* 不足 2 個就補，確保一定有三個不一樣的選項 */
+  let k = 0;
+  while (uniq.length < 2 && k < FILLERS.length){
+    const f = FILLERS[k++];
+    if (f !== right && uniq.indexOf(f) < 0) uniq.push(f);
+  }
+  const all = shuffle([right].concat(uniq.slice(0, 2)));
   return { o: all, a: all.indexOf(right) };
 }
 

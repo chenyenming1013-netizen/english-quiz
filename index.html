@@ -205,7 +205,7 @@
   <h1 id="pageTitle">📚 英文能力檢定</h1>
   <div class="sub" id="pageSub">選一個程度開始練習</div>
   <div class="audiobar" id="audioBar"></div>
-  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v16　Definition 7 週教材（P.154–207）</div>
+  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v17　修正受格所有格選項邏輯</div>
 
   <!-- 首頁 -->
   <div id="homeBox">
@@ -856,14 +856,39 @@ function genBasicExtra(){
   });
 
   /* 5 受格與所有格 */
+  /* 分開建立「受格 / 所有格形容詞 / 所有格代名詞」三個字庫，
+     干擾選項一律從同一詞性的字庫裡挑，不會再出現「主格＝受格」
+     （you／it）或「所有格形容詞＝所有格代名詞」（his／its）互相打架、
+     被過濾光只好塞入 the/a 這種不相干填充字的怪題。 */
+  const OBJ_POOL   = D_PRON.map(function(x){ return x[1]; });   /* me, you, him, her, it, us, them */
+  const PADJ_POOL  = D_PRON.map(function(x){ return x[2]; });   /* my, your, his, her, its, our, their */
+  const PPRON_POOL = D_PRON.map(function(x){ return x[3]; });   /* mine, yours, his, hers, its, ours, theirs */
+  function pronWrongs(pool, right, extra){
+    const out = [];
+    if (extra && extra !== right) out.push(extra);              /* 優先放同一列的主格，當作常見錯誤示範 */
+    shuffle(pool).forEach(function(w){
+      if (out.length >= 2) return;
+      if (w !== right && out.indexOf(w) < 0) out.push(w);
+    });
+    return out.slice(0, 2);
+  }
+
   D_PRON.forEach(function(r){
-    add(P.n5, "Give the book to ___. (" + r[0] + ")", r[1], [r[0], r[2]], "介系詞後面用受格 " + r[1] + "。");
-    add(P.n5, "This is ___ bag. (" + r[0] + ")", r[2], [r[1], r[3]], "後面有名詞，用所有格 " + r[2] + "。");
-    add(P.n5, "That bag is ___. (" + r[0] + ")", r[3], [r[1], r[2]], "後面沒有名詞，用所有格代名詞 " + r[3] + "。");
-    add(P.n5, "Can you help ___? (" + r[0] + ")", r[1], [r[0], r[2]], "動詞後面用受格 " + r[1] + "。");
-    add(P.n5, "___ friends are here. (" + r[0] + ")", r[2], [r[1], r[3]], "後面有名詞 friends，用所有格 " + r[2] + "。");
-    add(P.n5, "The teacher called ___. (" + r[0] + ")", r[1], [r[0], r[2]], "動詞後面用受格 " + r[1] + "。");
-    add(P.n5, "These books are ___. (" + r[0] + ")", r[3], [r[1], r[2]], "後面沒有名詞，用所有格代名詞 " + r[3] + "。");
+    const subj = r[0], obj = r[1], padj = r[2], ppron = r[3];
+    add(P.n5, "Give the book to ___. (" + subj + ")", obj, pronWrongs(OBJ_POOL, obj, subj),
+        "介系詞後面用受格 " + obj + "。");
+    add(P.n5, "Can you help ___? (" + subj + ")", obj, pronWrongs(OBJ_POOL, obj, subj),
+        "動詞後面用受格 " + obj + "。");
+    add(P.n5, "The teacher called ___. (" + subj + ")", obj, pronWrongs(OBJ_POOL, obj, subj),
+        "動詞後面用受格 " + obj + "。");
+    add(P.n5, "This is ___ bag. (" + subj + ")", padj, pronWrongs(PADJ_POOL, padj, null),
+        "後面有名詞 bag，用所有格形容詞 " + padj + "。");
+    add(P.n5, "These are ___ books. (" + subj + ")", padj, pronWrongs(PADJ_POOL, padj, null),
+        "後面有名詞 books，用所有格形容詞 " + padj + "。");
+    add(P.n5, "That bag is ___. (" + subj + ")", ppron, pronWrongs(PPRON_POOL, ppron, null),
+        "後面沒有名詞，用所有格代名詞 " + ppron + "。");
+    add(P.n5, "These books are ___. (" + subj + ")", ppron, pronWrongs(PPRON_POOL, ppron, null),
+        "後面沒有名詞，用所有格代名詞 " + ppron + "。");
   });
 
   /* 6 be 動詞 */

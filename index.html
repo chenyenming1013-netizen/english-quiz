@@ -226,7 +226,7 @@
   <div class="sub" id="pageSub">選一個程度開始練習</div>
   <div class="langbar" id="langBar"></div>
   <div class="audiobar" id="audioBar"></div>
-  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v36　對照教育部國小英語基本字詞與句型擴充</div>
+  <div style="text-align:center;font-size:11.5px;color:var(--soft);margin:6px 0 2px">版本 v37　修正不滿 10 題時的分數顯示</div>
 
   <!-- 首頁 -->
   <div id="homeBox">
@@ -2666,7 +2666,7 @@ function finishBlock(){
   $("blockDone").textContent = blocks.length > 1
       ? "第 " + (bi+1) + " 組完成（第 " + (blk().from+1) + "–" + blk().to + " 題）"
       : (partName ? partName.split("｜").pop() + " 完成" : "測驗完成");
-  $("scoreText").innerHTML = (right*10) + '<small> 分　（' + right + ' / ' + list.length + ' 題答對）</small>';
+  $("scoreText").innerHTML = score + '<small> 分　（' + right + ' / ' + list.length + ' 題答對）</small>';
   const cm = ["這一組再多練幾次，你會越來越熟！","有幾題不太確定，訂正一下就懂了。",
               "不錯喔，大部分都答對了。","很棒！只差一點點就滿分。","太厲害了，幾乎全對！"];
   const ci = score<40?0:score<55?1:score<70?2:score<85?3:4;
@@ -2735,7 +2735,7 @@ function showFinal(){
       : "💪 先多練習<br><small>可以回去複習第三級和 Basic</small>";
   } else $("finalShields").textContent = "";
   $("finalList").innerHTML = blocks.length > 1
-      ? blockScores.map((s,i)=>"・第 " + (i+1) + " 組：<b>" + (s.right*10) + " 分</b>（" + s.right + "/" + s.total + "）").join("<br>")
+      ? blockScores.map((s,i)=>"・第 " + (i+1) + " 組：<b>" + s.score + " 分</b>（" + s.right + "/" + s.total + "）").join("<br>")
       : "";
   $("backPartBtn").classList.toggle("hide", !hasMenu());
   $("newSetBtn").classList.toggle("hide", !(L && L.variants && L._pool && hasVariants(L._pool)));
